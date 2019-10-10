@@ -69,6 +69,10 @@ count_sum <- readRDS(file = "./data/q3_count_sum.rds") %>%
 
 approvals <- readRDS(file = "./data/q1_fy2020_approvals_items.rds")
 
+genre_rem <- readRDS(file = "./data/genre_up_q1_2020.rds")
+date_rem <- readRDS(file = "./data/date_up_q1_2020.rds")
+location_rem <- readRDS(file = "./data/location_up_q1_2020.rds")
+
 logo_blue_gradient <- shinyDashboardLogoDIY(
   boldText = "MSU"
   ,mainText = "dashboard"
@@ -186,10 +190,10 @@ ui <- dashboardPage(title="MSU dashboard",
                               )
                       ),
                       tabItem(tabName = "e_scores"
-                              ,fluidRow(box(width = NULL,title=HTML(paste("Remediation project highlights",br(),"<span style='font-size:12px'>April-June (fourth quarter), fiscal year 2019</span>"))
-                                            ,valueBoxOutput("tor_rem")
-                                            ,valueBoxOutput("genre_auth_rem")
-                                            ,valueBoxOutput("date_rem")))
+                              ,fluidRow(box(width = NULL,title=HTML(paste("Remediation project highlights",br(),"<span style='font-size:12px'>July-September (first quarter), fiscal year 2020</span>"))
+                                            ,valueBoxOutput("rem1")
+                                            ,valueBoxOutput("rem2")
+                                            ,valueBoxOutput("rem3")))
                               ,fluidRow(box(width=NULL,plotOutput(outputId = "e_plot")%>% withSpinner(color="#0dc5c1")))
                               ,fluidRow(box(includeHTML("e_scores.html"), width=NULL))
                       )
@@ -391,14 +395,16 @@ server <- function(input, output, session) {
   
   output$progressBox <- renderValueBox({
     valueBox(
-      comma_format()(sum(div_name() %>% filter(approval_type == "items") %$% n_apps)), vb_text(paste("Fiscal year 2019 ",ami_text()," item approvals"),"July 1, 2018 - June 30, 2019"), icon = icon("thumbs-up", lib = "glyphicon"),
+      comma_format()(sum(div_name() %>% filter(approval_type == "items") %$% n_apps)), vb_text(paste(ami_text()," Item approvals"),"July 1, 2018 - September 30, 2019"), icon = icon("thumbs-up", lib = "glyphicon"),
+      # comma_format()(sum(div_name() %>% filter(approval_type == "items") %$% n_apps)), vb_text(paste("Fiscal year 2019 ",ami_text()," item approvals"),"July 1, 2018 - June 30, 2019"), icon = icon("thumbs-up", lib = "glyphicon"),
       color = "light-blue"
     )
   })
   
   output$capProgressBox <- renderValueBox({
     valueBox(
-      comma_format()(sum(div_name() %>% filter(approval_type == "n_caps") %$% n_apps)), vb_text(paste("Fiscal year 2019 ",ami_text()," capture approvals"),"July 1, 2018 - June 30, 2019"), icon = icon("thumbs-up", lib = "glyphicon"),
+      comma_format()(sum(div_name() %>% filter(approval_type == "n_caps") %$% n_apps)), vb_text(paste(ami_text()," Capture approvals"),"July 1, 2018 - September 30, 2019"), icon = icon("thumbs-up", lib = "glyphicon"),
+      # comma_format()(sum(div_name() %>% filter(approval_type == "n_caps") %$% n_apps)), vb_text(paste("Fiscal year 2019 ",ami_text()," capture approvals"),"July 1, 2018 - June 30, 2019"), icon = icon("thumbs-up", lib = "glyphicon"),
       color = "purple"
     )
   })
@@ -406,7 +412,8 @@ server <- function(input, output, session) {
   output$AMIprogressBox <- renderValueBox({
     valueBox(
       comma_format()(sum(div_name() %>% filter(n_type == "Approved Items") %$% n_values)), 
-      HTML(paste("Fiscal year 2019 AMI item approvals",br(),"<span style = 'font-size: 11px'>July 1, 2018 - June 30, 2019</span>")), icon = icon("thumbs-up", lib = "glyphicon"),
+      HTML(paste("AMI item approvals",br(),"<span style = 'font-size: 11px'>July 1, 2018 - September 30, 2019</span>")), icon = icon("thumbs-up", lib = "glyphicon"),
+      # HTML(paste("Fiscal year 2019 AMI item approvals",br(),"<span style = 'font-size: 11px'>July 1, 2018 - June 30, 2019</span>")), icon = icon("thumbs-up", lib = "glyphicon"),
       color = "light-blue"
     )
   })
@@ -414,7 +421,8 @@ server <- function(input, output, session) {
   output$AMIcapBox <- renderValueBox({
     valueBox(
       comma_format()(sum(div_name() %>% filter(n_type == "Approved Captures") %$% n_values)), 
-      HTML(paste("Fiscal year 2019 AMI capture approvals",br(),"<span style = 'font-size: 11px'>July 1, 2018 - June 30, 2019</span>")), icon = icon("thumbs-up", lib = "glyphicon"),
+      HTML(paste("AMI capture approvals",br(),"<span style = 'font-size: 11px'>July 1, 2018 - September 30, 2019</span>")), icon = icon("thumbs-up", lib = "glyphicon"),
+      # HTML(paste("Fiscal year 2019 AMI capture approvals",br(),"<span style = 'font-size: 11px'>July 1, 2018 - June 30, 2019</span>")), icon = icon("thumbs-up", lib = "glyphicon"),
       color = "light-blue"
     )
   })
@@ -428,49 +436,57 @@ server <- function(input, output, session) {
   })
   
   output$perc_above <- renderValueBox({
-    valueBox(
-      paste0(round(sum(div_name() %>% filter(prop_type == "p_above") %$% n_above)/sum(div_name() %>% filter(prop_type == "p_above") %$% n_recs),3)*100, "%"), 
-      "Meet minimum mandatory requirements", icon = icon("arrow-up", lib = "glyphicon"), color = "green"
-    )
+    if (input$sidebar_menu == "mdsqual_prop" & input$compare_prop == "compare_divs"){
+      valueBox(
+        paste0(round(sum(div_name() %>% filter(prop_type == "p_above") %$% n_above)/sum(div_name() %>% filter(prop_type == "p_above") %$% n_recs),3)*100, "%"), 
+        "Meet minimum mandatory requirements", icon = icon("arrow-up", lib = "glyphicon"), color = "green"
+      )
+    }
+    else if (input$sidebar_menu == "mdsqual_prop" & input$compare_prop == "compare_fq") {
+      valueBox(
+        paste0(round(sum(div_name() %>% filter(prop_type == "p_above", fy_label == "FY2020 Q1") %$% n_above)/sum(div_name() %>% filter(prop_type == "p_above", fy_label == "FY2020 Q1") %$% n_recs),3)*100, "%"), 
+        "Meet minimum mandatory requirements", icon = icon("arrow-up", lib = "glyphicon"), color = "green"
+      )
+    }
+
   })
   
   output$perc_below <- renderValueBox({
-    valueBox(
-      paste0(round(sum(div_name() %>% filter(prop_type == "p_below") %$% n_below)/sum(div_name() %>% filter(prop_type == "p_below") %$% n_recs),3)*100, "%"), 
-      "Below minimum mandatory requirements", icon = icon("arrow-down", lib = "glyphicon"), color = "orange"
-    )
+    if (input$sidebar_menu == "mdsqual_prop" & input$compare_prop == "compare_divs"){
+      valueBox(
+        paste0(round(sum(div_name() %>% filter(prop_type == "p_below") %$% n_below)/sum(div_name() %>% filter(prop_type == "p_below") %$% n_recs),3)*100, "%"), 
+        "Below minimum mandatory requirements", icon = icon("arrow-down", lib = "glyphicon"), color = "orange"
+      )
+    }
+    else if (input$sidebar_menu == "mdsqual_prop" & input$compare_prop == "compare_fq") {
+      valueBox(
+        paste0(round(sum(div_name() %>% filter(prop_type == "p_below", fy_label == "FY2020 Q1") %$% n_below)/sum(div_name() %>% filter(prop_type == "p_below", fy_label == "FY2020 Q1") %$% n_recs),3)*100, "%"), 
+        "Below minimum mandatory requirements", icon = icon("arrow-down", lib = "glyphicon"), color = "orange"
+      )
+    }
   })
   
-  # output$genre_auth_rem <- renderValueBox({
-  #   # SCM ART ARTIFACTS IS NEGATIVE!!
-  #   q3 <- sum(div_name() %>% filter(quarter_lab == "Mar 2019", element == "genre", !score == 1.0) %$% n)
-  #   q4 <- sum(div_name() %>% filter(quarter_lab == "Jun 2019", element == "genre", !score == 1.0) %$% n)
-  #   q3_val <- ifelse(length(q3) == 0,0,q3)
-  #   q4_val <- ifelse(length(q4) == 0,0,q4)
-  #   val <- comma_format()(q3_val-q4_val)
-  #   if (val < 0) val <- "--"
-  #   valueBox(val, "Items had at least one genre term remediated", icon = icon("broom"), color = "fuchsia"
-  #   )
-  # })
-  # 
-  # output$tor_rem <- renderValueBox({
-  #   q3 <- div_name() %>% filter(quarter_lab == "Mar 2019", element == "typeOfResource", score == 0.0) %$% n
-  #   q4 <- div_name() %>% filter(quarter_lab == "Jun 2019", element == "typeOfResource", score == 0.0) %$% n
-  #   q3_val <- ifelse(length(q3) == 0,0,q3)
-  #   q4_val <- ifelse(length(q4) == 0,0,q4)
-  #   val <- comma_format()(q3_val-q4_val)
-  #   valueBox(val, "Items had a type of resource added", icon = icon("plus"), color = "black")
-  # })
-  # 
-  # output$date_rem <- renderValueBox({
-  #   q3 <- sum(div_name() %>% filter(quarter_lab == "Mar 2019", element == "date", !score == 1.0) %$% n)
-  #   q4 <- sum(div_name() %>% filter(quarter_lab == "Jun 2019", element == "date", !score == 1.0) %$% n)
-  #   q3_val <- ifelse(length(q3) == 0,0,q3)
-  #   q4_val <- ifelse(length(q4) == 0,0,q4)
-  #   val <- comma_format()(q3_val-q4_val)
-  #   if (val < 0) val <- "--"
-  #   valueBox(val, "Items had at least one date remediated", icon = icon("calendar-plus"), color = "lime")
-  # })
+  output$rem1 <- renderValueBox({
+    num_rem <- reactive({
+      comma_format()(nrow(genre_rem %>% filter(code %in% div_choice())))
+      })
+    valueBox(num_rem(), "Items had at least one genre term remediated", icon = icon("broom"), color = "lime"
+    )
+  })
+
+  output$rem2 <- renderValueBox({
+    num_rem <- reactive({
+      comma_format()(nrow(date_rem %>% filter(code %in% div_choice())))
+    })
+    valueBox(num_rem(), "Items had at least one date remediated", icon = icon("calendar-plus"), color = "fuchsia")
+  })
+  
+  output$rem3 <- renderValueBox({
+    num_rem <- reactive({
+      comma_format()(nrow(location_rem %>% filter(code %in% div_choice())))
+    })
+    valueBox(num_rem(), "Items had at least one location remediated", icon = icon("globe"), color = "black")
+  })
   ### VALUE BOXES ###
   
   ### PLOTS ###
@@ -558,7 +574,7 @@ server <- function(input, output, session) {
                 ,axis.text.y = element_text(size=10))
       }
 
-    }, width = ifelse(selected() == "no_filter","auto",300))
+    }, width = ifelse(selected() == "no_filter" | input$compare_prop == "compare_fq","auto",300))
   })
   
   sm_bu_pu = brewer.pal(n = 4, "BuPu")[2:4]

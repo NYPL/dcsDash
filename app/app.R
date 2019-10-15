@@ -13,6 +13,41 @@ library(RColorBrewer)
 library(packcircles)
 library(shinycssloaders)
 library(shinyjs)
+library(shinyWidgets)
+
+div_menu <- list(`All Divisions` = c("All Divisions" = "no_filter"),
+                 `LPA` = c("Billy Rose Theatre Division" = "THE",
+                           "Jerome Robbins Dance Division" = "DAN",
+                           "Music Division" = "MUS", 
+                           "Rodgers and Hammerstein Archives of Recorded Sound" = "RHA"),
+                 `SASB` = c("Berg Collection" = "BRG",
+                            "Dorot Jewish Division" = "JWS",
+                            "General Research Division" = "GRD",
+                            "George Arents Collection" = "ARN",                 
+                            "Manuscripts and Archives Division" = "MSS",
+                            "Map Division" = "MAP",
+                            "Milstein Division" = "LHG",                 
+                            "NYPL Archives" = "NYPLA",
+                            "Pforzheimer Collection" = "CPS",
+                            "Rare Book Division" = "RBK",                 
+                            "Slavic and East European Collections" = "HV",
+                            "Spencer Collection" = "SPN",
+                            "Wallach Division: Art & Architecture Collection" = "ART",
+                            "Wallach Division: Photography Collection"= "PHG",
+                            "Wallach Division: Picture Collection" = "MMPC",
+                            "Wallach Division: Print Collection" = "PRN"),
+                 `SCH` = c("Schomburg Art and Artifacts Division" = "SCF",
+                           "Schomburg Jean Blackwell Hutson Research and Reference Division" = "SCR",
+                           "Schomburg Manuscripts, Archives and Rare Books Division" = "SCM",
+                           "Schomburg Moving Image and Recorded Sound Division" = "SCL",
+                           "Schomburg Photographs and Prints Division" = "SCG"),
+                 `SIBL` = c(`SIBL: General collection`="BG")
+)
+
+# choices = list(
+#   Eastern = c(`New York` = 'NY', `New Jersey` = 'NJ'),
+#   Western = c(`California` = 'CA', `Washington` = 'WA')
+# )
 
 div_choices <- c("All Divisions" = "no_filter",
                  "Berg Collection" = "BRG",
@@ -48,6 +83,11 @@ ami_div_choices <- c("All Divisions" = "no_filter",
                      "Rodgers and Hammerstein Archives of Recorded Sound" = "RHA",
                      "Schomburg Moving Image and Recorded Sound Division" = "SCL")
 
+approvals_date_opts <- c("All data" = "all_year",
+                         "Current calendar year" = "cy",
+                         "FY 2020" = "fy2020",
+                         "FY 2019" = "fy2019")
+
 vb_text <- function(big_text, sm_text) {
   HTML(paste(big_text, br(), "<span style = 'font-size: 11px'>",sm_text,"</span>"))
 }
@@ -68,6 +108,7 @@ count_sum <- readRDS(file = "./data/q3_count_sum.rds") %>%
   bind_rows(readRDS(file = "./data/q1_2020_count_sum.rds"))
 
 approvals <- readRDS(file = "./data/q1_fy2020_approvals_items.rds")
+# print(names(approvals))
 
 genre_rem <- readRDS(file = "./data/genre_up_q1_2020.rds")
 date_rem <- readRDS(file = "./data/date_up_q1_2020.rds")
@@ -94,10 +135,20 @@ ui <- dashboardPage(title="MSU dashboard",
                                                  ),
                                                  menuItem("Metadata Quality", tabName = "mdsqual", icon = icon("medkit"), startExpanded = TRUE
                                                           ,menuSubItem("Overview of Scores", tabName = "mdsqual_prop", icon = icon("check-square"))
-                                                          ,menuSubItem("Scores by Element", tabName = "e_scores", icon = icon("clipboard-list"))),
+                                                          ,menuSubItem("Scores by Element", tabName = "e_scores", icon = icon("clipboard-list")))
                                                  # menuItem("Help", tabName = "faq", icon = icon("question-circle")),
-                                                 menuItem(selectInput(inputId = "divisions", label = HTML("<p style='color:black;'>Research Library Divisions</p>"), 
-                                                                      choices = div_choices, selectize = TRUE, selected = "no_filter")) #multiple = TRUE,
+                                                 # ,menuItem(selectInput(inputId = "divisions", label = HTML("<p style='color:black;'>Research Library Divisions</p>"), 
+                                                 #                      choices = div_menu, selected = "no_filter", selectize = TRUE)
+                                                 #          ) #multiple = TRUE,
+                                                 ,menuItem(pickerInput(
+                                                   inputId = "divisions",
+                                                   label = HTML("<p style='color:black;'>Research Library Divisions</p>"), 
+                                                   choices = div_menu,
+                                                   selected = "no_filter",
+                                                   options = list(
+                                                     `actions-box` = TRUE),
+                                                   multiple = TRUE
+                                                 ))
                                      )),
                     dashboardBody(# hide errors
                       tags$style(type="text/css",
@@ -125,8 +176,8 @@ ui <- dashboardPage(title="MSU dashboard",
                                        #                                              ))
                                        #           ,column(width=2
                                        #                   ,box(width = NULL,includeHTML("center.html"))))
-                                       ,column(width = 11
-                                               ,fluidRow(box(title = span(HTML("<b>Metadata Services Unit dashboard</b>")), solidHeader = TRUE, includeHTML("about.html"), status = "primary", width=12)))
+                                       # ,column(width = 11
+                                       #         ,fluidRow(box(title = span(HTML("<b>Metadata Services Unit dashboard</b>")), solidHeader = TRUE, includeHTML("about.html"), status = "primary", width=12)))
                                        # ,column(width = 3
                                        #         ,fluidRow(box(title = "Contact", includeHTML("contact.html"), width=NULL)))
                                        ,fluidRow(box(
@@ -145,10 +196,11 @@ ui <- dashboardPage(title="MSU dashboard",
                                 ,column(width = 3
                                         ,box(width = NULL 
                                              ,radioButtons(inputId = "app_type", label = "Approval type:"
-                                                           ,choices = c("All approvals"="all_apps", "AMI approvals"="ami_apps"
-                                                                        # , "Other resource types"="other_apps"
-                                                           )
-                                                           ,selected = "all_apps")
+                                                           ,choices = c("All approvals"="all_apps", "AMI approvals"="ami_apps")
+                                                                        # , "Other resource types"="other_apps")
+                                                                        ,selected = "all_apps")
+                                             ,radioButtons(inputId = "date_start", label = "Date range:"
+                                                           ,choices = approvals_date_opts, selected = "all_year")
                                         )
                                         ,box(width = NULL
                                              ,HTML('<p><span class = "legbox a_items">XX</span>  Items</p><p><span class = "legbox a_caps">XX</span>  Captures</p>'))
@@ -232,9 +284,17 @@ server <- function(input, output, session) {
       )}
     else {
       updateSelectInput(session, "divisions",
-                        choices = div_choices,
+                        choices = div_menu,
                         selected = selected())
       }
+  })
+  
+  month_start <- reactive({
+    switch(input$date_start, all_year = as.Date("2018-07-01"), cy = as.Date("2019-01-01"), fy2020 = as.Date("2019-07-01"), fy2019 = as.Date("2018-07-01"))
+  })
+  
+  month_end <- reactive({
+    switch(input$date_start, all_year = as.Date("2019-09-30"), cy = as.Date("2019-12-31"), fy2020 = as.Date("2020-06-30"), fy2019 = as.Date("2019-06-30"))
   })
   
   # what data to use to filter loaded data below (all divs, all divs in approvals incl NO_DIV, or just selected)
@@ -279,6 +339,7 @@ server <- function(input, output, session) {
       approvals %>% 
         filter(code %in% div_choice()) %>%
         filter(ami %in% ami_switch()) %>%
+        filter(between(d_month, month_start(), month_end())) %>%
         group_by(fy_year, fy_qy, d_month) %>%
         summarize(n_caps = sum(captures),
                   items = n()) %>%
@@ -395,7 +456,9 @@ server <- function(input, output, session) {
   
   output$progressBox <- renderValueBox({
     valueBox(
-      comma_format()(sum(div_name() %>% filter(approval_type == "items") %$% n_apps)), vb_text(paste(ami_text()," Item approvals"),"July 1, 2018 - September 30, 2019"), icon = icon("thumbs-up", lib = "glyphicon"),
+      comma_format()(sum(div_name() %>% filter(approval_type == "items") %$% n_apps)), vb_text(paste(ami_text()," Item approvals"), ""
+                                                                                               # ,"July 1, 2018 - September 30, 2019"
+                                                                                               ), icon = icon("thumbs-up", lib = "glyphicon"),
       # comma_format()(sum(div_name() %>% filter(approval_type == "items") %$% n_apps)), vb_text(paste("Fiscal year 2019 ",ami_text()," item approvals"),"July 1, 2018 - June 30, 2019"), icon = icon("thumbs-up", lib = "glyphicon"),
       color = "light-blue"
     )
@@ -403,7 +466,9 @@ server <- function(input, output, session) {
   
   output$capProgressBox <- renderValueBox({
     valueBox(
-      comma_format()(sum(div_name() %>% filter(approval_type == "n_caps") %$% n_apps)), vb_text(paste(ami_text()," Capture approvals"),"July 1, 2018 - September 30, 2019"), icon = icon("thumbs-up", lib = "glyphicon"),
+      comma_format()(sum(div_name() %>% filter(approval_type == "n_caps") %$% n_apps)), vb_text(paste(ami_text()," Capture approvals"), ""
+                                                                                                # ,"July 1, 2018 - September 30, 2019"
+                                                                                                ), icon = icon("thumbs-up", lib = "glyphicon"),
       # comma_format()(sum(div_name() %>% filter(approval_type == "n_caps") %$% n_apps)), vb_text(paste("Fiscal year 2019 ",ami_text()," capture approvals"),"July 1, 2018 - June 30, 2019"), icon = icon("thumbs-up", lib = "glyphicon"),
       color = "purple"
     )

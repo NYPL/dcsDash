@@ -15,8 +15,7 @@ library(shinycssloaders)
 library(shinyjs)
 library(shinyWidgets)
 
-div_menu <- list(`All Divisions` = c("All Divisions" = "no_filter"),
-                 `LPA` = c("Billy Rose Theatre Division" = "THE",
+div_menu <- list(`LPA` = c("Billy Rose Theatre Division" = "THE",
                            "Jerome Robbins Dance Division" = "DAN",
                            "Music Division" = "MUS", 
                            "Rodgers and Hammerstein Archives of Recorded Sound" = "RHA"),
@@ -44,13 +43,7 @@ div_menu <- list(`All Divisions` = c("All Divisions" = "no_filter"),
                  `SIBL` = c(`SIBL: General collection`="BG")
 )
 
-# choices = list(
-#   Eastern = c(`New York` = 'NY', `New Jersey` = 'NJ'),
-#   Western = c(`California` = 'CA', `Washington` = 'WA')
-# )
-
-div_choices <- c("All Divisions" = "no_filter",
-                 "Berg Collection" = "BRG",
+div_choices <- c("Berg Collection" = "BRG",
                  "Billy Rose Theatre Division" = "THE",
                  "Dorot Jewish Division" = "JWS",
                  "General Research Division" = "GRD",
@@ -77,8 +70,7 @@ div_choices <- c("All Divisions" = "no_filter",
                  "Wallach Division: Picture Collection" = "MMPC",
                  "Wallach Division: Print Collection" = "PRN")
 
-ami_div_choices <- c("All Divisions" = "no_filter",
-                     "Jerome Robbins Dance Division" = "DAN",
+ami_div_choices <- c("Jerome Robbins Dance Division" = "DAN",
                      "Manuscripts and Archives Division" = "MSS",
                      "Rodgers and Hammerstein Archives of Recorded Sound" = "RHA",
                      "Schomburg Moving Image and Recorded Sound Division" = "SCL")
@@ -92,20 +84,28 @@ vb_text <- function(big_text, sm_text) {
   HTML(paste(big_text, br(), "<span style = 'font-size: 11px'>",sm_text,"</span>"))
 }
 
+calc_element_scores <- function(mm, selected_divisions, report_time) {
+  mm %>%
+    filter(code %in% selected_divisions) %>%
+    gather(element, score, title:location) %>%
+    mutate(score = ifelse(score==0.75,0.50,score)) %>%
+    group_by(element, score) %>%
+    summarize(n = n()) %>%
+    mutate(perc = round((n / sum(n))*100, digits = 2),
+           report_time = as.Date(report_time))
+}
+
 circle_init <- readRDS(file = "./data/circl_init.rds")
 mm <- readRDS(file = "./data/q1_2020_mm.rds")
 mm_colls <- readRDS(file = "./data/q4_mm_colls.rds")
 
-mm_prop_q3 <- readRDS(file = "./data/q3_mm_prop.rds") %>% mutate(fy_q = "2019_q3") 
-mm_prop_q4 <- readRDS(file = "./data/q4_mm_prop.rds") %>% mutate(fy_q = "2019_q4") %>% bind_rows(mm_prop_q3)
-mm_prop <- readRDS(file = "./data/q1_2020_mm_prop.rds") %>% mutate(fy_q = "2020_q1") %>% bind_rows(mm_prop_q4)
+mm_prop <- readRDS(file = "./data/q1_2020_mm_prop.rds") 
 
 mm_select_q3 <- readRDS(file = "./data/q3_minmand_select.rds")
 mm_select_q4 <- readRDS(file = "./data/q4_minmand_select.rds")
 mm_select <- readRDS(file = "./data/q1_2020_minmand_select.rds")
-count_sum <- readRDS(file = "./data/q3_count_sum.rds") %>%
-  bind_rows(readRDS(file = "./data/q4_count_sum.rds")) %>%
-  bind_rows(readRDS(file = "./data/q1_2020_count_sum.rds"))
+count_sum <- readRDS(file = "./data/q1_2020_count_sum.rds")
+# print(names(count_sum))
 
 approvals <- readRDS(file = "./data/q1_fy2020_approvals_items.rds")
 # print(names(approvals))
@@ -113,6 +113,7 @@ approvals <- readRDS(file = "./data/q1_fy2020_approvals_items.rds")
 genre_rem <- readRDS(file = "./data/genre_up_q1_2020.rds")
 date_rem <- readRDS(file = "./data/date_up_q1_2020.rds")
 location_rem <- readRDS(file = "./data/location_up_q1_2020.rds")
+# print(names(location_rem))
 
 logo_blue_gradient <- shinyDashboardLogoDIY(
   boldText = "MSU"
@@ -136,6 +137,7 @@ ui <- dashboardPage(title="MSU dashboard",
                                                  menuItem("Metadata Quality", tabName = "mdsqual", icon = icon("medkit"), startExpanded = TRUE
                                                           ,menuSubItem("Overview of Scores", tabName = "mdsqual_prop", icon = icon("check-square"))
                                                           ,menuSubItem("Scores by Element", tabName = "e_scores", icon = icon("clipboard-list")))
+                                                 ,menuItem("Links", tabName = "links", icon = icon("external-link-alt"))
                                                  # menuItem("Help", tabName = "faq", icon = icon("question-circle")),
                                                  # ,menuItem(selectInput(inputId = "divisions", label = HTML("<p style='color:black;'>Research Library Divisions</p>"), 
                                                  #                      choices = div_menu, selected = "no_filter", selectize = TRUE)
@@ -144,9 +146,11 @@ ui <- dashboardPage(title="MSU dashboard",
                                                    inputId = "divisions",
                                                    label = HTML("<p style='color:black;'>Research Library Divisions</p>"), 
                                                    choices = div_menu,
-                                                   selected = "no_filter",
+                                                   selected = unique(mm$code),
                                                    options = list(
-                                                     `actions-box` = TRUE),
+                                                     `actions-box` = TRUE,
+                                                     `selected-text-format` = "count > 3"
+                                                     ,`count-selected-text` = ("{0} divisions selected")),
                                                    multiple = TRUE
                                                  ))
                                      )),
@@ -178,8 +182,6 @@ ui <- dashboardPage(title="MSU dashboard",
                                        #                   ,box(width = NULL,includeHTML("center.html"))))
                                        # ,column(width = 11
                                        #         ,fluidRow(box(title = span(HTML("<b>Metadata Services Unit dashboard</b>")), solidHeader = TRUE, includeHTML("about.html"), status = "primary", width=12)))
-                                       # ,column(width = 3
-                                       #         ,fluidRow(box(title = "Contact", includeHTML("contact.html"), width=NULL)))
                                        ,fluidRow(box(
                                          HTML(paste("* Does not include items in the following divisions: EXTERNAL, EPE/CSW, CHILDCTR, PBL, RRS, NO_DIV, UNK",
                                                     br(), 
@@ -208,11 +210,6 @@ ui <- dashboardPage(title="MSU dashboard",
                               )
                               ,fluidRow(box(includeHTML("approvals.html"), width=11))
                       ),
-                      # tabItem(tabName = "ami", 
-                      #         valueBoxOutput("AMIprogressBox"),valueBoxOutput("AMIcapBox"),valueBoxOutput("AMIremBox")
-                      #         ,fluidRow(box(width = 9, plotOutput(outputId = "ami_details")%>% withSpinner(color="#0dc5c1")))
-                      #         ,fluidRow(box(includeHTML("ami.html"), width=11))
-                      # ),
                       tabItem(tabName = "mdsqual_prop"
                               ,fluidRow(width=11
                                         ,valueBoxOutput("perc_above")
@@ -229,8 +226,7 @@ ui <- dashboardPage(title="MSU dashboard",
                                                               ,conditionalPanel(
                                                                 condition = "input.compare_prop == 'compare_divs'"
                                                                 ,radioButtons(inputId = "mds_qtr", label = "Fiscal quarter:"
-                                                                              ,choices = c("Third quarter, FY 2019"="fy2019_q3", "Fourth quater, FY 2019"="fy2019_q4"
-                                                                                           ,"First quater, FY 2020"="fy2020_q1")
+                                                                              ,choices = c("First quater, FY 2020"="fy2020_q1", "Fourth quater, FY 2019"="fy2019_q4","Third quarter, FY 2019"="fy2019_q3")
                                                                               ,selected = "fy2020_q1")
                                                               )
                                                               
@@ -249,21 +245,19 @@ ui <- dashboardPage(title="MSU dashboard",
                               ,fluidRow(box(width=NULL,plotOutput(outputId = "e_plot")%>% withSpinner(color="#0dc5c1")))
                               ,fluidRow(box(includeHTML("e_scores.html"), width=NULL))
                       )
-                      # ,tabItem(tabName = "faq",
-                      #         fluidRow(column(width = 8
-                      #                        ,fluidRow(box(title="Abbreviations", status = "primary", solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
-                      #                                      includeHTML("help_abbrevs.html"), width=11))
-                      #                        ,fluidRow(box(title="Division code key", status = "primary", solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
-                      #                                      includeHTML("help_divs.html"), width=11))
-                      #                        ,fluidRow(box(title="FAQ", status = "primary", solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
-                      #                                      includeHTML("help_qs.html"), width=11)))
-                      #                 ,column(width = 3, fluidRow(box(title = "Contact", includeHTML("contact.html"), width=NULL))))
-                      # 
-                      #         )
+                      ,tabItem(tabName = "links"
+                               ,fluidRow(box(title="Quarterly reports", status = "primary", solidHeader = TRUE
+                                             ,selectInput(inputId = "reports", label = "Select a quarterly report: ",
+                                                         choices = c("","First quater, FY 2020"="fy2020_q1", "Fourth quater, FY 2019"="fy2019_q4", "Third quarter, FY 2019"="fy2019_q3")
+                                                         ,selected = "", multiple = FALSE)
+                                             )
+                               )
+                      )
                       )
                     ))
 
 server <- function(input, output, session) {
+  # download quarterly pdfs
   
   # create var with div selected
   selected <- reactive({input$divisions})
@@ -277,7 +271,7 @@ server <- function(input, output, session) {
   
   # update dropdown menu based on ami availability
   observe({
-    if (input$sidebar_menu == "ami" | (input$sidebar_menu == "approvals" & input$app_type == "ami_apps")) {
+    if (input$sidebar_menu == "approvals" & input$app_type == "ami_apps") {
       updateSelectInput(session, "divisions",
                         choices = ami_div_choices,
                         selected = ifelse(selected() %in% ami_div_choices, selected(), "no_filter")
@@ -299,12 +293,15 @@ server <- function(input, output, session) {
   
   # what data to use to filter loaded data below (all divs, all divs in approvals incl NO_DIV, or just selected)
   div_choice <- reactive({
-    if (selected() == "no_filter" & !(input$sidebar_menu == "approvals" | input$sidebar_menu == "ami")) {
-      setdiff(div_choices, "no_filter")
+    if (length(selected()) == 0) {
+      div_choices
+    }
+    else if (length(selected()) == 26 & !(input$sidebar_menu == "approvals")) {
+      div_choices
       }
-    else if (selected() == "no_filter" & (input$sidebar_menu == "approvals" | input$sidebar_menu == "ami")) {
+    else if (length(selected()) == 26 & (input$sidebar_menu == "approvals")) {
       unique(approvals$code)
-      }
+    }
     else {
       c(selected())
       }
@@ -315,7 +312,7 @@ server <- function(input, output, session) {
     switch(input$app_type, all_apps = unique(approvals$ami), ami_apps = c("AMI"), other_apps = c("Not AMI"))
   })
   
-  # how to filter for fiscal quater (TEMP)
+  # how to filter for fiscal quater
   fyq_switch <- reactive({
     switch(input$mds_qtr, fy2019_q3 = c("2019_q3"), fy2019_q4 = c("2019_q4"), fy2020_q1 = c("2020_q1"))
   })
@@ -363,44 +360,15 @@ server <- function(input, output, session) {
     else if (input$sidebar_menu == "overview"){
       mm %>% filter(code %in% div_choice())
     }
-    else if (input$sidebar_menu == "ami"){
-      approvals %>% 
-        filter(code %in% div_choice()) %>%
-        filter(ami == 'AMI') %>%
-        group_by(center) %>%
-        summarize(`Approved Captures` = sum(captures),
-                  `Approved Items` = n()) %>%
-        gather(n_type, n_values, `Approved Captures`:`Approved Items`) %>%
-        bind_rows(tibble(center = 'LPA',n_type='Remediated Items',n_values=935*4))
-    }
     else if (input$sidebar_menu == "e_scores"){
-      if (input$divisions != 'no_filter') {
-        baseline <- mm_select_q3 %>%
-          filter(code %in% div_choice()) %>%
-          gather(element, score, title:location) %>%
-          mutate(score = ifelse(score==0.75,0.50,score)) %>%
-          group_by(element, score) %>%
-          summarize(n = n()) %>%
-          mutate(perc = round((n / sum(n))*100, digits = 2),
-                 report_time = as.Date("2019/03/01"))
-        b_q4 <- mm_select_q4 %>%
-          filter(code %in% div_choice()) %>%
-          gather(element, score, title:location) %>%
-          mutate(score = ifelse(score==0.75,0.50,score)) %>%
-          group_by(element, score) %>%
-          summarize(n = n()) %>%
-          mutate(perc = round((n / sum(n))*100, digits = 2),
-                 report_time = as.Date("2019/06/01")) %>%
-          bind_rows(baseline)
-        mm_select %>%
-          filter(code %in% div_choice()) %>%
-          gather(element, score, title:location) %>%
-          mutate(score = ifelse(score==0.75,0.50,score)) %>%
-          group_by(element, score) %>%
-          summarize(n = n()) %>%
-          mutate(perc = round((n / sum(n))*100, digits = 2),
-                 report_time = as.Date("2019/09/01")) %>%
-          bind_rows(b_q4) %>%
+      if (length(selected()) == 0 | length(selected()) = 26) {
+        count_sum
+      }
+      else {
+        baseline <- calc_element_scores(mm_select_q3, div_choice(), "2019/03/01") %>%
+          bind_rows(calc_element_scores(mm_select_q4, div_choice(), "2019/06/01") )
+        current <- calc_element_scores(mm_select, div_choice(), "2019/09/01") %>%
+          bind_rows(baseline) %>%
           mutate(ele_order = case_when(element == 'title' ~ 1,
                                        element == 'typeOfResource' ~ 2,
                                        element == 'identifier' ~ 3,
@@ -416,10 +384,6 @@ server <- function(input, output, session) {
                                          month(report_time) == 6 ~ paste('Jun',as.character(year(report_time))),
                                          month(report_time) == 9 ~ paste('Sep',as.character(year(report_time))),
                                          month(report_time) == 12 ~ paste('Dec',as.character(year(report_time))))) 
-      }
-      else {
-        # maybe loads faster for default view?
-        count_sum
       }
     }
   })
@@ -453,7 +417,6 @@ server <- function(input, output, session) {
     )
   })
   
-  
   output$progressBox <- renderValueBox({
     valueBox(
       comma_format()(sum(div_name() %>% filter(approval_type == "items") %$% n_apps)), vb_text(paste(ami_text()," Item approvals"), ""
@@ -471,32 +434,6 @@ server <- function(input, output, session) {
                                                                                                 ), icon = icon("thumbs-up", lib = "glyphicon"),
       # comma_format()(sum(div_name() %>% filter(approval_type == "n_caps") %$% n_apps)), vb_text(paste("Fiscal year 2019 ",ami_text()," capture approvals"),"July 1, 2018 - June 30, 2019"), icon = icon("thumbs-up", lib = "glyphicon"),
       color = "purple"
-    )
-  })
-  
-  output$AMIprogressBox <- renderValueBox({
-    valueBox(
-      comma_format()(sum(div_name() %>% filter(n_type == "Approved Items") %$% n_values)), 
-      HTML(paste("AMI item approvals",br(),"<span style = 'font-size: 11px'>July 1, 2018 - September 30, 2019</span>")), icon = icon("thumbs-up", lib = "glyphicon"),
-      # HTML(paste("Fiscal year 2019 AMI item approvals",br(),"<span style = 'font-size: 11px'>July 1, 2018 - June 30, 2019</span>")), icon = icon("thumbs-up", lib = "glyphicon"),
-      color = "light-blue"
-    )
-  })
-  
-  output$AMIcapBox <- renderValueBox({
-    valueBox(
-      comma_format()(sum(div_name() %>% filter(n_type == "Approved Captures") %$% n_values)), 
-      HTML(paste("AMI capture approvals",br(),"<span style = 'font-size: 11px'>July 1, 2018 - September 30, 2019</span>")), icon = icon("thumbs-up", lib = "glyphicon"),
-      # HTML(paste("Fiscal year 2019 AMI capture approvals",br(),"<span style = 'font-size: 11px'>July 1, 2018 - June 30, 2019</span>")), icon = icon("thumbs-up", lib = "glyphicon"),
-      color = "light-blue"
-    )
-  })
-  
-  output$AMIremBox <- renderValueBox({
-    valueBox(
-      comma_format()(sum(div_name() %>% filter(n_type == "Remediated Items") %$% n_values)), 
-      HTML(paste("**placeholder data**",br(),"Fiscal year 2019 AMI item remediation",br(),"<span style = 'font-size: 11px'>July 1, 2018 - June 30, 2019</span>")), icon = icon("thumbs-up", lib = "glyphicon"),
-      color = "light-blue"
     )
   })
   
@@ -533,22 +470,34 @@ server <- function(input, output, session) {
   
   output$rem1 <- renderValueBox({
     num_rem <- reactive({
-      comma_format()(nrow(genre_rem %>% filter(code %in% div_choice())))
-      })
+      if (length(selected()) == 26 | length(selected()) == 0) {
+        comma_format()(nrow(genre_rem))
+      } else {
+        comma_format()(nrow(genre_rem %>% filter(code %in% div_choice())))
+      }
+    })
     valueBox(num_rem(), "Items had at least one genre term remediated", icon = icon("broom"), color = "lime"
     )
   })
 
   output$rem2 <- renderValueBox({
     num_rem <- reactive({
-      comma_format()(nrow(date_rem %>% filter(code %in% div_choice())))
+      if (length(selected()) == 26 | length(selected()) == 0) {
+        comma_format()(nrow(date_rem))
+      } else {
+        comma_format()(nrow(date_rem %>% filter(code %in% div_choice())))
+      }
     })
     valueBox(num_rem(), "Items had at least one date remediated", icon = icon("calendar-plus"), color = "fuchsia")
   })
   
   output$rem3 <- renderValueBox({
     num_rem <- reactive({
-      comma_format()(nrow(location_rem %>% filter(code %in% div_choice())))
+      if (length(selected()) == 26 | length(selected()) == 0) {
+        comma_format()(nrow(location_rem))
+      } else {
+        comma_format()(nrow(location_rem %>% filter(code %in% div_choice())))
+      }
     })
     valueBox(num_rem(), "Items had at least one location remediated", icon = icon("globe"), color = "black")
   })
@@ -639,7 +588,7 @@ server <- function(input, output, session) {
                 ,axis.text.y = element_text(size=10))
       }
 
-    }, width = ifelse(selected() == "no_filter" | input$compare_prop == "compare_fq","auto",300))
+    }, width = ifelse(selected() == "no_filter" | input$compare_prop == "compare_fq" | (input$compare_prop == "compare_divs" & length(unique(div_name()$code)) > 6),"auto",300))
   })
   
   sm_bu_pu = brewer.pal(n = 4, "BuPu")[2:4]

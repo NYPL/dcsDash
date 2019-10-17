@@ -5,8 +5,6 @@ library(scales)
 library(ggthemes)
 library(shinydashboard)
 library(dashboardthemes)
-library(Cairo)
-options(shiny.usecairo=T)
 library(magrittr)
 library(lubridate)
 library(RColorBrewer)
@@ -14,6 +12,38 @@ library(packcircles)
 library(shinycssloaders)
 library(shinyjs)
 library(shinyWidgets)
+# library(plotly)
+library(ggiraph)
+
+dropdownButton <- function(label = "", status = c("default", "primary", "success", "info", "warning", "danger"), ..., width = NULL) {
+  
+  status <- match.arg(status)
+  # dropdown button content
+  html_ul <- list(
+    class = "dropdown-menu",
+    style = if (!is.null(width)) 
+      paste0("width: ", validateCssUnit(width), ";"),
+    lapply(X = list(...), FUN = tags$li, style = "margin-left: 10px; margin-right: 10px;")
+  )
+  # dropdown button apparence
+  html_button <- list(
+    class = paste0("btn btn-", status," dropdown-toggle"),
+    type = "button", 
+    `data-toggle` = "dropdown"
+  )
+  html_button <- c(html_button, list(label))
+  html_button <- c(html_button, list(tags$span(class = "caret")))
+  # final result
+  tags$div(
+    class = "dropdown",
+    do.call(tags$button, html_button),
+    do.call(tags$ul, html_ul),
+    tags$script(
+      "$('.dropdown-menu').click(function(e) {
+      e.stopPropagation();
+});")
+  )
+  }
 
 div_menu <- list(`LPA` = c("Billy Rose Theatre Division" = "THE",
                            "Jerome Robbins Dance Division" = "DAN",
@@ -149,10 +179,20 @@ ui <- dashboardPage(title="MSU dashboard",
                                                    selected = unique(mm$code),
                                                    options = list(
                                                      `actions-box` = TRUE,
-                                                     `selected-text-format` = "count > 3"
+                                                     `selected-text-format` = "count > 2"
                                                      ,`count-selected-text` = ("{0} divisions selected")),
                                                    multiple = TRUE
                                                  ))
+                                                 # ,menuItem(dropdownButton(
+                                                 #   label = "Check some boxes", status = "default", width = 80,
+                                                 #   checkboxGroupInput(inputId = "check1", label = "Choose", choices = div_menu)
+                                                 # ))
+                                                 # ,menuItem(selectizeInput("select", "Research Library Divisions", div_menu,
+                                                 #                          multiple = TRUE, options = list(
+                                                 #                            'plugins' = list('remove_button'),
+                                                 #                            'create' = TRUE,
+                                                 #                            'persist' = FALSE)
+                                                 # ))
                                      )),
                     dashboardBody(# hide errors
                       tags$style(type="text/css",
@@ -171,6 +211,23 @@ ui <- dashboardPage(title="MSU dashboard",
                                  ,".a_caps {background: #8c96c6; color: #8c96c6;}"
                                  ,".a_items {background: #b3cde3; color: #b3cde3;}"
                       ),
+                      tags$body(tags$div(id="ppitest", style="width:1in;visible:hidden;padding:0px")),
+                      
+                      tags$script('$(document).on("shiny:connected", function(e) {
+                                  var w = window.innerWidth;
+                                  var h = window.innerHeight;
+                                  var d =  document.getElementById("ppitest").offsetWidth;
+                                  var obj = {width: w, height: h, dpi: d};
+                                  Shiny.onInputChange("pltChange", obj);
+                                  });
+                                  $(window).resize(function(e) {
+                                  var w = $(this).width();
+                                  var h = $(this).height();
+                                  var d =  document.getElementById("ppitest").offsetWidth;
+                                  var obj = {width: w, height: h, dpi: d};
+                                  Shiny.onInputChange("pltChange", obj);
+                                  });
+                                  '),
                       shinyDashboardThemes(theme = "grey_light"),
                       tabItems(tabItem(tabName = "overview", 
                                        fluidRow(valueBoxOutput("n_apps", width = 3),valueBoxOutput("n_caps", width = 3),valueBoxOutput("n_ami", width = 3),valueBoxOutput("n_ami_caps", width = 3))
@@ -193,7 +250,9 @@ ui <- dashboardPage(title="MSU dashboard",
                               ,valueBoxOutput("capProgressBox")
                               ,fluidRow(
                                 column(width = 9
-                                       ,box(width = NULL, plotOutput(outputId = "monthly_approvals")%>% withSpinner(color="#0dc5c1"))
+                                       # ,box(width = NULL, plotOutput(outputId = "monthly_approvals")%>% withSpinner(color="#0dc5c1"))
+                                       ,box(width = NULL, girafeOutput(outputId = "monthly_approvals", width = "100%")%>% withSpinner(color="#0dc5c1"))
+                                       # ,div(id="ppitest", girafeOutput(outputId = "monthly_approvals"))
                                 )
                                 ,column(width = 3
                                         ,box(width = NULL 
@@ -340,7 +399,11 @@ server <- function(input, output, session) {
         group_by(fy_year, fy_qy, d_month) %>%
         summarize(n_caps = sum(captures),
                   items = n()) %>%
-        gather(key = "approval_type", value = "n_apps", n_caps, items)
+        gather(key = "approval_type", value = "n_apps", n_caps, items) %>%
+        mutate(tooltip = sprintf("%s %s in %s", 
+                                 comma_format()(n_apps), 
+                                 ifelse(approval_type == 'n_caps', 'captures', 'items'), 
+                                 paste(month(d_month, label = TRUE, abbr = TRUE), year(d_month))))
     }
     else if (input$sidebar_menu == "mdsqual_prop" & input$compare_prop == "compare_divs"){
       mm_prop %>% filter(code %in% div_choice()) %>% filter(fy_q %in% fyq_switch())
@@ -361,7 +424,7 @@ server <- function(input, output, session) {
       mm %>% filter(code %in% div_choice())
     }
     else if (input$sidebar_menu == "e_scores"){
-      if (length(selected()) == 0 | length(selected()) = 26) {
+      if (length(selected()) == 0 | length(selected()) == 26) {
         count_sum
       }
       else {
@@ -592,19 +655,38 @@ server <- function(input, output, session) {
   })
   
   sm_bu_pu = brewer.pal(n = 4, "BuPu")[2:4]
-  output$monthly_approvals <- renderPlot({
-    ggplot(div_name(), aes(d_month, n_apps, fill=approval_type)) + 
-      geom_bar(stat = 'identity', position = "dodge") +
+  # output$monthly_approvals <- renderPlot({
+  #   ggplot(div_name(), aes(d_month, n_apps, fill=approval_type)) +
+  #     geom_bar(stat = 'identity', position = "dodge") +
+  #     scale_x_date(date_labels = "%b %Y", date_breaks="month", expand = c(0.03,0.03)) +
+  #     # scale_x_date(date_labels = "%b %Y", date_breaks="month", limits = as.Date(c('6/20/2018', '9/10/2019'), format="%m/%d/%Y")) +
+  #     scale_y_continuous(labels = comma) +
+  #     # geom_text(aes(d_month, items, label=comma(items)), vjust = -0.2, size=3) +
+  #     scale_fill_manual(values=sm_bu_pu) +
+  #     # scale_color_brewer(palette="Dark2", guide='none') +
+  #     # facet_grid(. ~ fy_qy, scales = "free_x", space = "free_x") +
+  #     facet_grid(. ~ fy_year, scales = "free_x", space = "free_x", labeller = as_labeller(c(`2019` = "FY2019", `2020` = "FY2020"))) +
+  #     # facet_grid_sc(cols = vars(fy_year), scales = list(x = scales_x), space = "free_x") +
+  #     # theme_calc() +
+  #     theme_tufte(base_family='sans') +
+  #     theme(axis.title.x=element_blank()
+  #           ,axis.title.y=element_blank()
+  #           ,axis.text.y = element_text(size=10)
+  #           ,axis.text.x = element_text(size=10)
+  #           ,legend.position = "none"
+  #           ,strip.background = element_rect(fill="lightgray", color = "lightgray")
+  #           ,panel.border = element_rect(size = 3, colour = "lightgray", fill = NA)
+  #           ,strip.text.x = element_text(size = 10))
+  # })
+  
+  output$monthly_approvals <- renderGirafe({
+    p <- ggplot(div_name(), aes(d_month, n_apps, fill=approval_type, tooltip = tooltip)) +
+      geom_bar_interactive(stat = 'identity', position = "dodge") +
       scale_x_date(date_labels = "%b %Y", date_breaks="month", expand = c(0.03,0.03)) +
-      # scale_x_date(date_labels = "%b %Y", date_breaks="month", limits = as.Date(c('6/20/2018', '9/10/2019'), format="%m/%d/%Y")) +
       scale_y_continuous(labels = comma) +
-      # geom_text(aes(d_month, items, label=comma(items)), vjust = -0.2, size=3) +
       scale_fill_manual(values=sm_bu_pu) +
-      # scale_color_brewer(palette="Dark2", guide='none') +
-      # facet_grid(. ~ fy_qy, scales = "free_x", space = "free_x") +
+      # scale_fill_manual_interactive(values=sm_bu_pu) +
       facet_grid(. ~ fy_year, scales = "free_x", space = "free_x", labeller = as_labeller(c(`2019` = "FY2019", `2020` = "FY2020"))) +
-      # facet_grid_sc(cols = vars(fy_year), scales = list(x = scales_x), space = "free_x") +
-      # theme_calc() +
       theme_tufte(base_family='sans') +
       theme(axis.title.x=element_blank()
             ,axis.title.y=element_blank()
@@ -613,8 +695,66 @@ server <- function(input, output, session) {
             ,legend.position = "none"
             ,strip.background = element_rect(fill="lightgray", color = "lightgray")
             ,panel.border = element_rect(size = 3, colour = "lightgray", fill = NA)
-            ,strip.text.x = element_text(size = 10)) 
+            ,strip.text.x = element_text(size = 10))
+    
+    tooltip_css <- "background-color:transparent;font-family:sans-serif;color:black;"
+    
+    g <- girafe(ggobj = p,
+                width_svg = (0.8*input$pltChange$width/input$pltChange$dpi),
+                height_svg = (0.7*input$pltChange$height/input$pltChange$dpi))
+    
+    x <- girafe_options(x = g,
+                        opts_tooltip(css = tooltip_css,
+                                     use_fill = TRUE
+                                     # ,opacity = .7
+                        )
+                        # ,opts_sizing(rescale = TRUE, width = 1)
+                        )
+    x
   })
+  
+  # output$monthly_approvals <- renderPlotly({
+  #   p <- ggplot(div_name(), aes(d_month, n_apps, fill=approval_type)) +
+  #     geom_bar(stat = 'identity', position = "dodge") +
+  #     scale_x_date(date_labels = "%b %Y", date_breaks="month", expand = c(0.03,0.03)) +
+  #     # scale_x_date(date_labels = "%b %Y", date_breaks="month", limits = as.Date(c('6/20/2018', '9/10/2019'), format="%m/%d/%Y")) +
+  #     scale_y_continuous(labels = comma) +
+  #     # geom_text(aes(d_month, items, label=comma(items)), vjust = -0.2, size=3) +
+  #     scale_fill_manual(values=sm_bu_pu) +
+  #     # scale_color_brewer(palette="Dark2", guide='none') +
+  #     # facet_grid(. ~ fy_qy, scales = "free_x", space = "free_x") +
+  #     facet_grid(. ~ fy_year, scales = "free_x", space = "free_x", labeller = as_labeller(c(`2019` = "FY2019", `2020` = "FY2020"))) +
+  #     # facet_grid_sc(cols = vars(fy_year), scales = list(x = scales_x), space = "free_x") +
+  #     # theme_calc() +
+  #     theme_tufte(base_family='sans') +
+  #     theme(axis.title.x=element_blank()
+  #           ,axis.title.y=element_blank()
+  #           ,axis.text.y = element_text(size=10)
+  #           ,axis.text.x = element_text(size=10)
+  #           ,legend.position = "none"
+  #           ,strip.background = element_rect(fill="lightgray", color = "lightgray")
+  #           ,panel.border = element_rect(size = 3, colour = "lightgray", fill = NA)
+  #           ,strip.text.x = element_text(size = 10))
+  #   
+  #   p <- plot_ly(div_name(), x= ~d_month, y = ~n_apps, group = ~approval_type, color = ~approval_type
+  #                ,type = "bar"
+  #                # ,orientation = 'h'
+  #   ,marker = list(color=sm_bu_pu)
+  #                # ,text = comma_format()(view_sum$tot)
+  #                ,textposition="outside"
+  #                ,cliponaxis = FALSE
+  #                ,hoverinfo = 'text'
+  #                # ,hovertext = overview_tooltip(view_sum$user_lab,view_sum$tot,'page views')
+  #   ) %>%
+  #     layout(showlegend = F
+  #            # ,bargap = 0
+  #            ,xaxis = list(title = "", showgrid = FALSE, zeroline = FALSE, showticklabels = TRUE)
+  #            ,yaxis = list(title = "", showgrid = FALSE, zeroline = FALSE, showticklabels = TRUE)
+  #            # ,margin = list(b=10,l=10,r=70,t=10,pad=4)
+  #     )
+  #   ggplotly(p) %>%
+  #     config(displayModeBar = F)
+  # })
   
   output$e_plot <- renderPlot({
     ggplot(div_name(), aes(x = reorder(quarter_lab, month(report_time)), y = perc, fill=score_order)) +

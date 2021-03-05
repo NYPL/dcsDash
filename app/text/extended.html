@@ -1,0 +1,41 @@
+<h5><strong>Extended metadata quality assessment for mandatory elements</strong></h5>
+<p>Building on our foundational minimum mandatory work, the MSU took a deeper dive into four of our mandatory elements (Type of Resource, Identifier, Genre, and Date) to assess quality criteria above and beyond the minimum required for digitized items.
+<ul style="list-style: none;">
+	<li><span style="color:#91cf60"><strong>Green</strong></span> is a passing score</li>
+	<li><span style="color:#fee08b"><strong>Yellow</strong></span> is a partial score  (i.e. some but not all of the quality criteria were met)</li>
+	<li><span style="color:#fc8d59"><strong>Orange</strong></span> is a failing score (i.e. the element is not present at the item-level)</li></ul>
+</p>
+  
+<h5><strong>What do we mean by metadata quality?</strong></h5>
+<p>Our extended mandatory element assessment encompasses the following metadata quality criteria:
+<ul style="list-style: none;"><li><em>Completeness</em>: Is the element or attribute present?</li>
+<li><em>Accessibility</em>: Can it be understood by a human and/or a machine?</li>
+<li><em>Conformance</em>: Does it meet core needs of our user community by conforming to expected standards?</li></ul>
+</p>
+
+<h5><strong>Why is this important?</strong></h5>
+<p>This information provides a more granular analysis to help the MSU strategize and track targeted remediation projects. Improving metadata quality improves discovery of and context for our online collections.</p>
+
+
+<h5><strong>Extended mandatory element scoring criteria</strong></h5>
+<p>typeOfResource</p>
+	<ul>
+		<li>Exactly one typeOfResource element is marked primary (<em>Completeness</em>)</li>
+		<li>Each typeOfResource is distinct (no duplicates) (<em>Conformance</em>)</li>
+	</ul>
+<p>identifier</p>
+	<ul>
+		<li>Each record with a TMS ID must have a TMS Object Number (and vice versa) (<em>Completeness</em>)</li>
+		<li>Each record with an MSS ID should have an Archives EAD ID (if described in a finding aid) (<em>Completeness</em>)</li>
+	</ul>
+<p>genre</p>
+	<ul>
+		<li>Each genre element has an authority attribute that is not blank (<em>Accessibility</em>)</li>
+		<li>Each genre element has valueURI attribute that is not blank</em>)</li>
+	</ul>
+<p>date</p>
+	<ul>
+		<li>Each date element is w3cdtf encoded (unless BCE date) (<em>Accessibility</em>)</li>
+		<li>Record has exactly one date marked "keyDate" (<em>Completeness</em>)</li>
+	</ul>
+	

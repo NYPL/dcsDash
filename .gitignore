@@ -48,3 +48,8 @@ rsconnect/
 # data files
 data/
 .secrets/
+packrat/lib*/
+.Rprofile
+renv.lock
+renv/
+

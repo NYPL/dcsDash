@@ -9,28 +9,15 @@ ui <- function(req) {
                                                  ,menuItem("Project lifecycle", tabName = "lifecycle", icon = icon("camera"))
                                                  ,menuItem("Rights", tabName = "rightsBD", icon = icon("edit"))
                                                  ,menuItem("AMI Preservation", tabName = "pami", icon = icon("microphone"))
+                                                 ## Option 2
                                                  ,menuItem(HTML("Metadata Quality"), icon = icon("medkit"), startExpanded = FALSE, tabName = "hiddenMQ"
-                                                           # ,menuSubItem("Overview of Scores", tabName = "mdsqual_prop", icon = icon("check-square"))
-                                                           # ,menuSubItem("Scores by Element", tabName = "e_scores", icon = icon("clipboard-list"))
-                                                           ,menuItem("Minimum Mandatory", tabName = "minmand"
-                                                                     ,menuSubItem("Overview of Scores", tabName = "mdsqual_prop", icon = icon("check-square"))
-                                                                     ,menuSubItem("Scores by Element", tabName = "e_scores", icon = icon("clipboard-list"))
-                                                           )
-                                                           ,menuItem("Extended Quality Criteria", tabName = "supp"
-                                                                     ,menuSubItem("Mandatory elements", tabName = "ext", icon = icon("check-square"))
-                                                                     ,menuSubItem("Recommended elements", tabName = "ifapp", icon = icon("clipboard-list"))
-                                                           )
-                                                           ,menuItem("Special Projects", tabName = "proj"
-                                                                     ,menuSubItem("Resource type accuracy", tabName = "tor", icon = icon("forward"))
-                                                                     ,menuSubItem("Name element", tabName = "name", icon = icon("user-edit"))
-                                                           )
+                                                           ,menuSubItem("Overview", tabName = "mdsqual_prop", icon = icon("check-square"))
+                                                           ,menuSubItem("Evaluation by element", tabName = "e_scores", icon = icon("clipboard-list"))
+                                                           ,menuSubItem("Recommended elements", tabName = "ifapp", icon = icon("receipt"))
+                                                           ,menuSubItem("Resource type accuracy", tabName = "tor", icon = icon("forward"))
+                                                           ,menuSubItem("Name element", tabName = "name", icon = icon("user-edit"))
                                                  )
                                                  ,hidden(menuItem("hiddenQual", tabName = "mdsqual"))
-                                                 # ,menuItem(HTML("Metadata: Special Projects"), icon = icon("clipboard"), startExpanded = FALSE
-                                                 #           ,menuSubItem("Resource type accuracy", tabName = "tor", icon = icon("forward"))
-                                                 #           ,menuSubItem("Name element", tabName = "name", icon = icon("user-edit"))
-                                                 # )
-                                                 # ,menuItem("Reports (pdf)", tabName = "links", icon = icon("external-link-alt"))
                                                  ,chooseBy_ui("chooseBy")
                                                  ,centers_ui("centers")
                                                  ,divisions_ui("divisions")
@@ -48,11 +35,6 @@ ui <- function(req) {
                                                              ,column(width = 2,
                                                                      fluidRow(get_latest_data("overview_btn","overview_btn_title")))
                                                    )
-                                                   # ,fluidRow(box(
-                                                   #   HTML(paste("* Does not include items in the following divisions: EXTERNAL, EPE/CSW, CHILDCTR, PBL, RRS, NO_DIV, UNK",
-                                                   #              br(), 
-                                                   #              "&dagger; May include incorrectly classified items"))
-                                                   #   ,width=11, style = "color: gray; font-size: 10px; font-family: Monospace;"))
                                   ),
                                   tabItem(tabName = "publishing", 
                                           fluidRow(purrr::map(c("progressBox", "capProgressBox", "app_rights_box", "cap_rights_box"), vb_ui))
@@ -75,7 +57,6 @@ ui <- function(req) {
                                                     ,dl_box("downloadApp")
                                             )
                                           )
-                                          # ,fluidRow()
                                   ),
                                   tabItem(
                                     tabName = "lifecycle", 
@@ -83,7 +64,6 @@ ui <- function(req) {
                                       column(width = 8, align="center"
                                              ,plot_box("diu_plot",spinner=TRUE)
                                              ,div(style = "margin-top:-30px;margin-bottom:-15px;", calendar_ui("diu_slide", label = ""))
-                                             # ,sliderInput("diu_slide", label = "",min=2017, max=year(today()), value=c(2018,year(today())), sep = "")
                                              ,uiOutput("diu_coll_bars_box")
                                              ,box(includeHTML("./text/imaging.html"), width=12, align = "left")
                                       ),
@@ -96,11 +76,9 @@ ui <- function(req) {
                                              ,fluidRow(dl_box("downloadDIU"))
                                       ) # pie col
                                     ) # plot row
-                                    # ,fluidRow(box(includeHTML("./text/imaging.html"), width=11)) # text row
                                   )
                                   ,tabItem(
                                     tabName = "rightsBD"
-                                    # ,fluidRow(box(title=rightsBD_title, width=10)) # text row
                                     ,fluidRow(box(uiOutput("rightsBD_title"), width=10)) # text row
                                     ,fluidRow(
                                       column(width = 9, plot_box("rightsBD_plot",spinner=TRUE))
@@ -112,9 +90,6 @@ ui <- function(req) {
                                     fluidRow(
                                       column(width = 8, align="center"
                                              ,plot_box("pami_plot",spinner=TRUE)
-                                             # ,div(style = "margin-top:-30px;margin-bottom:-15px;", calendar_ui("diu_slide", label = ""))
-                                             # ,sliderInput("diu_slide", label = "",min=2017, max=year(today()), value=c(2018,year(today())), sep = "")
-                                             # ,uiOutput("diu_coll_bars_box")
                                              ,box(width=12, align = "left"
                                                   ,includeHTML("./text/pami.html")
                                                   )
@@ -122,25 +97,29 @@ ui <- function(req) {
                                       column(width = 4
                                              ,fluidRow(width = NULL, uiOutput("pami_clicked_text"))
                                              ,plot_box("pami_pie_1", boxheight="210px", plotwidth="100%", plotheight="350px")
-                                             # ,plot_box("pami_pie_2", boxheight="210px", plotwidth="100%", plotheight="350px")
+                                             ,plot_box("pami_pie_2", boxheight="210px", plotwidth="100%", plotheight="350px")
                                              ,fluidRow(pami_gloss_box())
-                                             # ,get_latest_data("pami_btn","pami_btn_title")
                                              ,fluidRow(dl_box("downloadPAMI"))
                                       ) # pie col
                                     ) # plot row
-                                    # ,fluidRow(box(includeHTML("./text/imaging.html"), width=11)) # text row
                                   )
-                                  # ,tabItem(tabName = "mdsqual"
-                                  #          ,fluidRow(box(width = NULL, title="Metadata quality landing page", "Some text!", br(),
-                                  #                        actionLink("link_to_overview", HTML("<span style='font-size:20px; ;'>Link to Overview of Scores</span>")),
-                                  #                        br(),"[some info about this section]",br(),
-                                  #                        actionLink("link_to_names", HTML("<span style='font-size:20px; ;'>Link to Names</span>")),
-                                  #                        br(),"[some info about this section]",br()
-                                  #                        )
-                                  #                    )
-                                  #          
-                                  #          # ,fluidRow(box(includeHTML("./text/e_scores.html"), width=NULL))
-                                  #          )
+                                  ,tabItem(tabName = "mdsqual"
+                                           ,fluidRow(box(width = NULL, HTML("<h3><strong>Metadata Quality navigation</strong></h3><h4><strong>Minimum mandatory metadata quality criteria</strong></h4>"),
+                                                         HTML("<p>The MSU conducts targeted metadata quality assessment and remediation of the metadata elements required for the <a href='https://drive.google.com/open?id=1WkzQcf5UBcGTOLJGpCDEfxfLAxhZP6-W-IrgvTIRjO0'>minimum viable description</a> of digitized items as well as metadata for recommended elements and attributes."),
+                                                         p("Select the ", actionLink("link_to_overview", "overview")," page to look at the proportion of records in our Research Library Divisions that meet our minimum standards for digitized items each fiscal quarter."),
+                                                         # br(),br(),
+                                                         p("Select the ", actionLink("link_to_e_scores", "evaluation by element"), " page to see metadata quality remediation progress for each of our mandatory elements (Title, Type of Resource, Identifier, Genre, Date, and Location) since the start of our targeted remediation project in March 2019."),
+                                                         # br(),
+                                                         HTML("<h4><strong>Metadata quality criteria for additional elements</strong></h4>"),
+                                                         p("Building on our foundational metadata quality work for mandatory elements, the MSU assessed seven recommended metadata elements for compliance with our metadata criteria: Language, Name, Form, Note, Table of Contents, Description, and Subject."),
+                                                         p("Select the ", actionLink("link_to_rec", "recommended elements")," page to see metadata quality remediation progress for each of these elements since the start of our targeted remediation project in March 2019."),
+                                                         HTML("<h4><strong>Project highlights</strong></h4>"),
+                                                         p("The MSU organized the two projects currently on display for Preservation of Audio and Moving Image (PAMI) staff interested in remote work."),
+                                                         p("Select the ", actionLink("link_to_tor", "resource type accuracy")," page to view progress on this remediation project, which focuses on correcting issues of accuracy with the type of resource element that arose when data was migrated to MMS for its launch in 2012. The migration generated erroneous “still image” resource types for material that is accurately described using other/additional resource types."),
+                                                         p("Select the ", actionLink("link_to_name", "name element")," page to view progress on this remediation project, which focuses on ensuring that name roles and authorized headings are present and conform to our standards. The presence of this information helps patrons better understand objects in our Digital Collections.")
+                                                         )
+                                                     )
+                                           )
                                   ,tabItem(tabName = "mdsqual_prop"
                                            ,fluidRow(width=11, purrr::map(c("perc_above", "perc_below"), vb_ui, width=4))
                                            ,fluidRow(width=NULL
@@ -161,22 +140,24 @@ ui <- function(req) {
                                   ,tabItem(tabName = "e_scores"
                                            ,fluidRow(box(width = NULL, title=uiOutput("e_plot_title"), purrr::map(c("rem1", "rem2", "rem3", "rem4", "rem5"), vb_ui) ))
                                            ,fluidRow(column(width = 10,plot_box("e_plot",spinner=TRUE))
-                                                     ,elements_help_box("elements_uncat_text")
+                                                     ,column(width = 2,fluidRow(box(width=NULL, uiOutput('elements_uncat_text'), catalogued_check('elements_cat'), status = "info"
+                                                                                    , radioButtons("phase_btn","Remediation project phase:",choices=c("Phase 1","Phase 2")))))
+                                                                                # ,box(width=NULL, radioButtons("phase_btn","Remediation project phase:",choices=c("Phase 1","Phase 2")))))
                                            )
-                                           ,fluidRow(box(includeHTML("./text/e_scores.html"), width=NULL))
+                                           ,fluidRow(box(uiOutput("elements_text"), width=NULL)) #includeHTML("./text/e_scores.html"), width=NULL))
                                   )
-                                  ,tabItem(tabName = "ext"
-                                           ,fluidRow(box(width = NULL, title=uiOutput("ext_plot_title"), purrr::map(c("ext1", "ext2", "ext3", "ext4"), vb_ui) ))
-                                           ,fluidRow(column(width = 10,plot_box("ext_plot",spinner=TRUE))
-                                                     # ,column(width = 2,catalogued_check("ext_cat"))
-                                                     ,elements_help_box("ext_uncat_text","ext_check")
-                                           )
-                                           ,fluidRow(box(includeHTML("./text/extended.html"), width=NULL))
-                                  )
+                                  # ,tabItem(tabName = "ext"
+                                  #          ,fluidRow(box(width = NULL, title=uiOutput("ext_plot_title"), purrr::map(c("ext1", "ext2", "ext3", "ext4"), vb_ui) ))
+                                  #          ,fluidRow(column(width = 10,plot_box("ext_plot",spinner=TRUE))
+                                  #                    # ,column(width = 2,catalogued_check("ext_cat"))
+                                  #                    ,elements_help_box("ext_uncat_text","ext_check")
+                                  #          )
+                                  #          ,fluidRow(box(includeHTML("./text/extended.html"), width=NULL))
+                                  # )
                                   ,tabItem(tabName = "ifapp"
                                            ,fluidRow(box(width = NULL, title=uiOutput("ifapp_plot_title"), purrr::map(c("ifapp1", "ifapp2", "ifapp3", "ifapp4"), vb_ui) ))
                                            ,fluidRow(column(width = 10,plot_box("ifapp_plot",spinner=TRUE))
-                                                     ,elements_help_box("ifapp_uncat_text","ifapp_check")
+                                                     ,column(width = 2,fluidRow(box(width=NULL, uiOutput('ifapp_uncat_text'), catalogued_check('ifapp_check'), status = "info" )))
                                            )
                                            ,fluidRow(box(includeHTML("./text/recommended.html"), width=NULL))
                                   )
@@ -199,21 +180,6 @@ ui <- function(req) {
                                              # )))
                                            )
                                   )
-                                  # ,tabItem(tabName = "links"
-                                  #          ,fluidRow(box(title="Quarterly reports (pdf)", status = "primary", solidHeader = TRUE
-                                  #                        ,selectInput(inputId = "reports", label = "Select a quarterly report: ",
-                                  #                                     choices = c("","Second quarter, FY 2020"="fy2020_q2",
-                                  #                                                 "First quarter, FY 2020"="fy2020_q1",
-                                  #                                                 "Fourth quarter, FY 2019"="fy2019_q4",
-                                  #                                                 "Third quarter, FY 2019"="fy2019_q3")
-                                  #                                     ,selected = "", multiple = FALSE)
-                                  #                        ,conditionalPanel(
-                                  #                          condition = "input.reports !== ''"
-                                  #                          ,downloadButton('downloadReport', 'Download')
-                                  #                        ) #panel
-                                  #          ) # box
-                                  #          ) # fluidRow
-                                  # ) #tabItem
                                   ) # tabItems
                     ) # dashboardBody
 ) #dashboardpage
@@ -251,7 +217,23 @@ server <- function(input, output, session) {
     updateTabItems(session, "tabs", "mdsqual_prop")
   })
   
-  observeEvent(input$link_to_names, {
+  observeEvent(input$link_to_e_scores, {
+    updateTabItems(session, "tabs", "e_scores")
+  })
+  
+  observeEvent(input$link_to_ext, {
+    updateTabItems(session, "tabs", "ext")
+  })
+  
+  observeEvent(input$link_to_rec, {
+    updateTabItems(session, "tabs", "ifapp")
+  })
+  
+  observeEvent(input$link_to_tor, {
+    updateTabItems(session, "tabs", "tor")
+  })
+  
+  observeEvent(input$link_to_name, {
     updateTabItems(session, "tabs", "name")
   })
   
@@ -267,7 +249,10 @@ server <- function(input, output, session) {
   
   # dynamic set file last updated
   output$overview_btn_title <- renderUI({
-    span(paste0("Data last updated: ",as_date(overview_file_date())), style = "font-size: 14px ; font-weight: bold")
+    # print(overview_file_date())
+    fd <- if (input$overview_btn == 0){as_date(overview_file_date())} 
+    else {"today"}
+    span(paste0("Data last updated: ",fd), style = "font-size: 14px ; font-weight: bold")
   })
   
   approvals_file_path <- "./data/download/approvals.csv"
@@ -276,13 +261,11 @@ server <- function(input, output, session) {
     trigger_data_load("approvals_btn",input$approvals_btn[1], approvals_file_path, "~/approvals.csv", session, mainPlot=TRUE)
   }, ignoreNULL = FALSE)
   
-  approvals_file_date <- eventReactive(input$approvals_btn, {
-    file.info(approvals_file_path)$ctime
-  }, ignoreNULL = FALSE)
-  
   # dynamic set file last updated
   output$approvals_btn_title <- renderUI({
-    span(paste0("Data last updated: ",as_date(approvals_file_date())), style = "font-size: 14px ; font-weight: bold")
+    fd <- if (input$approvals_btn == 0){as_date(file.info(approvals_file_path)$ctime)} 
+          else {"today"}
+    span(paste0("Data last updated: ",fd), style = "font-size: 14px ; font-weight: bold")
   })
   
   diu_divs <- eventReactive(input$diu_btn, {
@@ -303,13 +286,12 @@ server <- function(input, output, session) {
     trigger_data_load("diu_btn",input$diu_btn[1], diu_line_file_path, "~/diu_line.csv", session, mainPlot=TRUE)
   }, ignoreNULL = FALSE)
   
-  diu_file_date <- eventReactive(input$diu_btn, {
-    file.info(diu_line_file_path)$ctime
-  }, ignoreNULL = FALSE)
-  
   # dynamic set file last updated
   output$diu_btn_title <- renderUI({
-    span(paste0("Data last updated: ",as_date(diu_file_date())), style = "font-size: 14px ; font-weight: bold")
+    # print(diu_file_date())
+    fd <- if (input$diu_btn == 0){as_date(file.info(diu_line_file_path)$ctime)} 
+    else {"today"}
+    span(paste0("Data last updated: ",fd), style = "font-size: 14px ; font-weight: bold")
   })
   
   # get user input & init react ---------------------------------------------------------------
@@ -417,16 +399,14 @@ server <- function(input, output, session) {
       color = "teal"
     )
   })
-  # outputOptions(output, "n_ami", suspendWhenHidden = FALSE, priority = 10)
-  
+
   output$n_ami_caps <- renderValueBox({
     valueBox(
       comma_format()(sum(overview_df() %>% filter(ami == "AMI") %$% captures)), vb_text("Approved AMI captures in MMS",date_text_overview()), icon = icon("headphones"),
       color = "light-blue"
     )
   })
-  # outputOptions(output, "n_ami_caps", suspendWhenHidden = FALSE, priority = 10)
-  
+
   # names page ---------------------------------------------------------------
   names_df <- reactive({ 
     filter_by_division(load_or_refresh_data('./data/name_df.csv','',FALSE,FALSE),div_choice()) %>%
@@ -443,29 +423,19 @@ server <- function(input, output, session) {
              report_label = paste0(month(rep_date,label=TRUE, abbr=TRUE)," ",str_sub(year(rep_date),start=-2)))
   })
   
-  # change <- "var change =  {'2019_q3':'Mar 19','2020_q1':'Sep 19','2020_q3':'Mar 20','2020_q4':'Jun 20','2021_q1':'Sep 20'};"
-  # q_to_date <- unique(zoo::as.Date(zoo::as.yearqtr(df$report_time, format = "%Y_q%q") - 1/2, frac = 1))
-  # paste0(month(zoo::as.Date(zoo::as.yearqtr(df$report_time, format = "%Y_q%q") - 1/2, frac = 1),label=TRUE, abbr=TRUE)," ",year(q_to_date))
-  
-  
-  
-  
+
   plotdf <- reactive({
-    print(head(names_df()))
+    # print(head(names_df()))
     names_df() %>%
       pivot_longer(name_elements:`Name roles`, names_to = 'category', values_to = 'value') %>%
       mutate(category = factor(category, levels = c("name_elements", "name_authority", "role_elements", "role_authority","Name roles","Name authorities"))) %>%
       filter(category %in% c("Name roles","Name authorities"))
   })
   
-  # q_to_label_js <- reactive({paste0("var change =  {",paste0(paste0("'",names_df()$report_time,"':'",names_df()$report_label,"'"),collapse=", "),"}; ")})
-  
   output$name_plot <- renderHighchart({
     req(div_choice())
 
     q_to_label_js <- paste0("var change =  {",paste0(paste0("'",names_df()$report_time,"':'",names_df()$report_label,"'"),collapse=", "),"}; ")
-    
-    # min_var <- ifelse(input$name_select == 'name_role', pretty(min(names_df()$`MARC relator code`) - 30, 1)[[1]], 0)
     
     hchart(plotdf(), "column", hcaes(x = report_time, y = value, group = category)) %>%
       hc_xAxis(labels = list(style = list(fontSize = '15px')
@@ -485,9 +455,7 @@ server <- function(input, output, session) {
   
   end_of_quarter_vb_text <- reactive({ get_eoq_text(max_q()) })
   
-  roles <- reactive({ filter_by_division(load_or_refresh_data('./data/nameRole_df.csv','',FALSE,FALSE),div_choice()) })
-  
-  name_auth <- reactive({ filter_by_division(load_or_refresh_data('./data/nameURI_df.csv','',FALSE,FALSE),div_choice()) })
+  this_q_in_df <- paste0(str_replace(str_split(this_qtr,'q')[[1]][[1]], 'f', '20'), '_q', str_split(this_qtr,'q')[[1]][[2]])
   
   output$namevb_1 <- renderValueBox({
     req(div_choice())
@@ -500,7 +468,7 @@ server <- function(input, output, session) {
   output$namevb_2 <- renderValueBox({
     req(div_choice())
     valueBox(
-      comma_format()(sum(roles()$remediation)), 
+      comma_format()(filter(names_df(), report_time == this_q_in_df)$role_authority - filter(names_df(), report_time == '2019_q3')$role_authority), 
       vb_text('Name roles added or remediated', 'Since March 2019'), color = "olive"
     )
   })
@@ -508,13 +476,14 @@ server <- function(input, output, session) {
   output$namevb_3 <- renderValueBox({
     req(div_choice())
     valueBox(
-      comma_format()(sum(name_auth()$remediation)), 
+      comma_format()(filter(names_df(), report_time == this_q_in_df)$name_authority - filter(names_df(), report_time == '2019_q3')$name_authority), 
       vb_text('Name authorities added or remediated', 'Since March 2019'), color = "olive"
     )
   })
   # tor page ---------------------------------------------------------------
   tor_df <- reactive({ 
     filter_by_division(load_or_refresh_data('./data/tor_df.csv','',FALSE,FALSE),div_choice()) %>%
+      # load_or_refresh_data('./data/tor_df.csv','',FALSE,FALSE) %>%
       group_by(report_time,resource_type) %>%
       summarise(n = sum(n)) %>%
       arrange(desc(n)) %>%
@@ -527,6 +496,7 @@ server <- function(input, output, session) {
   
   
   output$img_plot <- renderHighchart({
+    # print(img())
     hchart(img(), "column", hcaes(x = resource_type, y = n, group = report_time)) %>%
       hc_xAxis(title = list(text = ""), labels = list(style = list(fontSize = '15px'))) %>%
       hc_yAxis(title = list(text = "")) %>%
@@ -548,12 +518,8 @@ server <- function(input, output, session) {
 
   
   # Rights BD ---------------------------------------------------------------
-  rights_df <- reactive({ 
-    load_or_refresh_data('./data/rights_totals_gs.csv','',FALSE,TRUE) %>%
-      filter(!is.na(`...1`)) %>%
-      mutate(date = mdy(`...1`),
-             percent = as.numeric(str_remove(`Percent unlabeled`,'%'))) %>%
-      select(date, percent)
+  rights_df <- reactive({
+    load_or_refresh_data('./data/rights.csv',"~/rights.csv",TRUE,FALSE)
   })
   
   output$rightsBD_title <- renderUI({
@@ -578,86 +544,7 @@ server <- function(input, output, session) {
       hc_xAxis(type = "datetime", dateTimeLabelFormats = list(month = '%b %e, %Y'), title = list(text = "")) %>%
       hc_tooltip(valueDecimals = 2, pointFormat = "<span style=\"color: {series.color} \">\u25CF</span> {series.name}: <b>{point.y}%</b>")
   })
-  # outputOptions(output, "rightsBD_plot", suspendWhenHidden = FALSE, priority = 7)
-  
-  # proportion page ---------------------------------------------------------------
-  fiscal_qtrs <- reactive({ selected_fiscal_qtr(input$fy_select) })
-  
-  mds_prop <- reactive({ 
-    df <- readRDS(get_catalogued_or_all(input$prop_cat, mm_prop_path))
-    get_mdsqual_prop(df, input$compare_prop, div_choice(), fiscal_qtrs()) 
-  })
-  
-  output$prop_plot <- renderHighchart({
-    if (input$compare_prop == "compare_divs"){
-      plines <- get_center_facet_lines(mds_prop())
-      
-      highchart() %>%
-        hc_chart(type = "column") %>%
-        hc_plotOptions(series=list(stacking='normal')) %>% 
-        hc_yAxis(lineColor = "lightgrey", lineWidth = 5,
-                 labels  = list(formatter = JS("function () { return Math.abs(this.value) + '%'; }")), 
-                 max = 125, min = -100, showLastLabel = FALSE, tickInterval = 25, minorTickInterval = 25,
-                 plotBands = list(
-                   list(from = 105, to = 125, color = "rgba(211, 211, 211, 0.3)",
-                        label = list(text = "", verticalAlign = "top")))
-        ) %>%
-        hc_xAxis(categories = mds_prop()$code, labels=list(rotation = 0, staggerLines = 2),
-                 plotLines = plines) %>% 
-        hc_legend(enabled = FALSE) %>%
-        hc_tooltip(formatter = JS(prop_tooltip)) %>%
-        hc_add_series(mds_prop() %>% filter(prop_type=="p_above") %$% values*100, name = "meet", showInLegend = FALSE,color=c("#99d594")) %>%
-        hc_add_series(mds_prop() %>% filter(prop_type=="p_below") %$% -values*100, name = "are below", showInLegend = FALSE,color=c("#fc8d59"))
-    }
-    else {
-      highchart() %>% 
-        hc_xAxis(categories = mds_prop()$fy_label) %>% 
-        hc_yAxis(labels  = list(formatter = JS("function () { return Math.abs(this.value) + '%'; }")), maxPadding = 5, minPadding = 5, ceiling = 100) %>% #, max = 100
-        hc_legend(enabled = FALSE) %>%
-        hc_tooltip(formatter = JS(line_tooltip)) %>%
-        hc_add_series(name = "meet requirements", data = mds_prop() %>% filter(prop_type=="p_above") %$% values*100, color = '#99d594')
-    }
-    
-  })
-  
-  end_of_quarter_prop <- reactive({ 
-    if(input$compare_prop == "compare_divs") { max_q <- fiscal_qtrs() } else { max_q <- max(sort(unique(fiscal_slider_text(unique(mm_prop$fy_q))), decreasing = TRUE)) }  
-    get_eoq_text(max_q)
-  })
-  
-  output$perc_above <- renderValueBox({
-    if (input$compare_prop == "compare_divs"){
-      valueBox(
-        paste0(round(sum(mds_prop() %>% filter(prop_type == "p_above") %$% n_above)/sum(mds_prop() %>% filter(prop_type == "p_above") %$% n_recs),3)*100, "%"), 
-        vb_text("Meet minimum mandatory requirements",end_of_quarter_prop()), icon = icon("arrow-up", lib = "glyphicon"), color = "green"
-      )
-    }
-    else {
-      end_of_quarter_prop <- get_eoq_text(max(sort(unique(fiscal_slider_text(unique(mm_prop$fy_q))), decreasing = TRUE)))
-      # print(vb_text("Meet minimum mandatory requirements",end_of_quarter_prop()))
-      valueBox(
-        paste0(round(sum(mds_prop() %>% filter(prop_type == "p_above", fy_q == max(fy_q)) %$% n_above)/sum(mds_prop() %>% filter(prop_type == "p_above", fy_q == max(fy_q)) %$% n_recs),3)*100, "%"), 
-        vb_text("Meet minimum mandatory requirements",end_of_quarter_prop()), icon = icon("arrow-up", lib = "glyphicon"), color = "green"
-      )
-    }
-    
-  })
-  
-  output$perc_below <- renderValueBox({
-    if (input$compare_prop == "compare_divs"){
-      valueBox(
-        paste0(round(sum(mds_prop() %>% filter(prop_type == "p_below") %$% n_below)/sum(mds_prop() %>% filter(prop_type == "p_below") %$% n_recs),3)*100, "%"), 
-        vb_text("Below minimum mandatory requirements",end_of_quarter_prop()), icon = icon("arrow-down", lib = "glyphicon"), color = "orange"
-      )
-    }
-    else {
-      valueBox(
-        paste0(round(sum(mds_prop() %>% filter(prop_type == "p_below", fy_q == max(fy_q)) %$% n_below)/sum(mds_prop() %>% filter(prop_type == "p_below", fy_q == max(fy_q)) %$% n_recs),3)*100, "%"), 
-        vb_text("Below minimum mandatory requirements",end_of_quarter_prop()), icon = icon("arrow-down", lib = "glyphicon"), color = "orange"
-      )
-    }
-  })
-  
+
   # approvals page ---------------------------------------------------------------
   approvals_filtered <- reactive({ 
     # print(month_end())
@@ -744,8 +631,7 @@ server <- function(input, output, session) {
   output$app_coll_bars <- renderHighchart({
     req(app_clickers$top_colls)
     top_colls <- app_clickers$top_colls
-    # end_str <- ifelse(nrow(top_colls) == 1 & str_detect(top_colls$collection_title[[1]], "collection"), '</u></a>.','</u></a> collection.')
-    
+
     if (nrow(top_colls) == 1) {
       # print(top_colls)
       highchart() %>%
@@ -936,12 +822,6 @@ server <- function(input, output, session) {
       )
   })
   
-  # top_colls <- reactive({
-  #   req(clickers$clicked_date)
-  #   tc <- get_diu_top_colls(diu_coll_name(), clickers$clicked_category, clickers$clicked_date)
-  #   if (nrow(filter(tc, n > 1)) > 0) { return(filter(tc, n > 1)) } else { return(tc)  }
-  # })
-  
   # dynamic set height of collection plot box based on whether it will be a plot or text
   output$diu_coll_bars_box <- renderUI({
     dynamic_collection_bar_box(clickers$top_colls,"diu_coll_bars")
@@ -989,98 +869,73 @@ server <- function(input, output, session) {
                                      year(top_colls$d_month[[1]])),'</b>')
                  ,style = list(color = "black", useHTML = TRUE))
     }
-    
-    
-    
+  
   })
   
 
   # pami page ---------------------------------------------------------------
-  
-  pami_line <- vroom::vroom(paste0('./data/pami_line_',this_qtr,'.csv')) %>%
+  piedf <- vroom::vroom(paste0('./data/pami_pie_',this_qtr,'.csv')) #('./data/pami_pie_f21q2.csv')
+  pami_line <- vroom::vroom(paste0('./data/pami_line_',this_qtr,'.csv')) %>% #vroom::vroom(paste0('./data/pami_line_2',this_qtr,'.csv')) %>%
     group_by(d_month, date_type) %>%
     summarise(n = sum(n)) %>%
     pivot_wider(names_from = date_type, values_from = n) %>%
     mutate(reported = ifelse(d_month > ymd('2019-01-01') & is.na(reported), 0, reported),
-           ingested = replace_na(ingested,0)) 
-  # %>% 
-  #   # filter(across(c(reported, ingested), ~ !is.na(.x))) %>%
-  #   filter(across(c(-reported, -ingested), is.na))
-  print(head(pami_line))
+           ingested = replace_na(ingested,0),
+           digitized= ifelse(d_month > ymd('2017-07-01') & is.na(digitized), 0, digitized)) 
+  # print(head(pami_line))
   
   output$pami_plot <- renderHighchart({
-    # pami_line_filtered <- filter_by_division(vroom::vroom('./data/pami_line.csv'), div_choice()) %>%
-    # print(head(pami_line_filtered))
+
     pami_click <- JS("function(event) {Shiny.onInputChange('pami_clicked', [this.name, event.point.category, event.point.y]);}")
     
     highchart() %>%
       hc_xAxis(type = "datetime", dateTimeLabelFormats = list(month = "%b %Y"), align = "center") %>%
       hc_plotOptions(series = list(cursor = "pointer", events = list(click = pami_click))) %>%
-      # hc_add_series(pami_line, "line", name = "digitized", hcaes(d_month, digitized), color = "#a6761d", marker = list(symbol = "circle")) %>%
+      hc_add_series(pami_line, "line", name = "digitized", hcaes(d_month, digitized), color = "#a61d4d", marker = list(symbol = "circle")) %>%
       hc_add_series(pami_line, "line", name = "reported", hcaes(d_month, reported), color = "#1b9e77", marker = list(symbol = "circle")) %>%
       hc_add_series(pami_line, "line", name = "ingested", hcaes(d_month, ingested), color = "#7570b3", marker = list(symbol = "circle")) 
   })
   
-  # pami_date_vars <- c('digitized','reported','ingested')
-  # pami_dark_cols <- c('#745214','#a11c60','#974201')
-  # pami_light_cols <- c('#d2ba8e','#f394c4','#e89f67')
-  pami_date_vars <- c('reported','ingested')
-  pami_dark_cols <- c('#093125','#33305a')
-  pami_light_cols <- c('#2bdba6','#a5a1cd')
+
+  pami_date_vars <- c('digitized','reported','ingested')
+  pami_dark_cols <- c('#530e26','#093125','#33305a')
+  pami_light_cols <- c('#d28ea6','#2bdba6','#a5a1cd')
   
   # store clicked values for plotting
   pami_clickers <- reactiveValues() 
   observeEvent(input$pami_clicked, {
     shinyjs::show("pami_clicked_text")
     shinyjs::show("pami_pie_1")
-    # shinyjs::show("pami_pie_2")
-    # print(head(pami_pie_df()))
-    # print(input$pami_clicked)
+    shinyjs::show("pami_pie_2")
+
     pami_clickers$clicked_y <- clicked_y <- comma_format()(as.numeric(input$pami_clicked[3]))
     clicked_posix <- as.Date(as.POSIXct(as.numeric(input$pami_clicked[2])/1000, origin="1970-01-01"))
     pami_clickers$clicked_date_str <- clicked_date_str <- strftime(clicked_posix, "%B %Y")
     pami_clickers$clicked_date <- clicked_date <- ymd(strftime(clicked_posix, "%Y-%m-%d"))
     pami_clickers$clicked_category <- clicked_category <- input$pami_clicked[1]
-    # print(clicked_date_str)
-    print(clicked_date)
-    print(clicked_category)
+
+    # print(clicked_date)
+    # print(clicked_category)
     
     withProgress(message = "Computing results", detail = "fetching data", value = 0, {
 
       incProgress(0.25, detail = "wrangling data for this point")
-      
-      # pami_pie_df <- reactive({ filter_by_division(vroom::vroom('./data/pami_pie.csv'), div_choice()) })
-      # pami_pie_df <- vroom::vroom('./data/pami_pie.csv')
 
       # get all captures in this division(s) and the clicked month
-      piedf <- vroom::vroom(paste0('./data/pami_pie_',this_qtr,'.csv'))
-      # piedf <- vroom::vroom(paste0(app_data_dir,'pami_pie_',this_qtr_filenames,'.csv'))
       p_subDN <- get_clicked_pie_df(piedf, clicked_category, clicked_date, pami_date_vars)
-      # clicked_category <- 'ingested'
-      # clicked_date <- ymd('2019-08-01')
-      # clicked_date_str <- strftime(clicked_date, "%B %Y")
-      # p_subDN <- get_clicked_pie_df(pdf_ini, clicked_category, clicked_date, pami_date_vars)
-      # print(head(p_subDN))
       
       p_other_dts <- setdiff(pami_date_vars,c(clicked_category))
       # print(p_other_dts[[1]])
       
-      fh <- get_pie(p_subDN, p_other_dts[[1]], clicked_category, clicked_date_str, diu_date_vars)
-      darkest_color <- case_when(fh$date_type[1] == pami_date_vars[[1]] ~ pami_dark_cols[[1]],
-                                 fh$date_type[1] == pami_date_vars[[2]] ~ pami_dark_cols[[2]])
-      lightest_color <- case_when(fh$date_type[1] == pami_date_vars[[1]] ~ pami_light_cols[[1]],
-                                  fh$date_type[1] == pami_date_vars[[2]] ~ pami_light_cols[[2]])
-      colfunc <- colorRampPalette(c(lightest_color, darkest_color))
-      fh$hex <- colfunc(nrow(fh))
-
-      pami_clickers$first_half <-  fh %>% arrange(d_month)
-          # tibble::add_column(hex = add_pie_hex(.,pami_date_vars,pami_dark_cols,pami_light_cols)) 
+      fh <- get_pie(p_subDN, p_other_dts[[1]], clicked_category, clicked_date_str, diu_date_vars) %>% 
+        tibble::add_column(hex = add_pie_hex(.,pami_date_vars,pami_dark_cols,pami_light_cols)) %>% arrange(d_month)
+      pami_clickers$first_half <- fh
+      # print(head(fh))
       
-
-      # print(pami_clickers$first_half)
-      # pami_clickers$second_half <- get_pie(subDN, other_dts[[2]], clicked_category, clicked_date_str,diu_date_vars) %>%
-      #   tibble::add_column(hex = add_pie_hex(.,pami_date_vars,pami_dark_cols,pami_light_cols)) %>% arrange(d_month)
-      # #  <- second_half
+      sh <- get_pie(p_subDN, p_other_dts[[2]], clicked_category, clicked_date_str, diu_date_vars) %>% 
+        tibble::add_column(hex = add_pie_hex(.,pami_date_vars,pami_dark_cols,pami_light_cols)) %>% arrange(d_month)
+      pami_clickers$second_half <-  sh
+      # print(head(sh))
 
       incProgress(0.25, detail = "generating plots")
 
@@ -1112,23 +967,102 @@ server <- function(input, output, session) {
       )
   })
   
-  # output$pami_pie_2 <- renderHighchart({
-  #   req(pami_clickers$second_half)
-  #   
-  #   highchart() %>%
-  #     hc_add_series(pami_clickers$second_half, hcaes(x=d_month, y=n, color=hex), startAngle = -90, endAngle = 90, type="pie",
-  #                   dataLabels=list(enabled=TRUE, distance = -30, formatter = JS("function() { if (this.point.month_label === '') { return null } else { return this.point.month_label} }"))
-  #                   ,innerSize= '50%', size ='100%'
-  #     ) %>%
-  #     hc_tooltip(formatter = JS(pie_tooltip)) %>%
-  #     hc_title(text = paste0('<b>',pami_clickers$second_half$date_type[[1]],'</b>')
-  #              ,style = list(useHTML = TRUE)
-  #              ,verticalAlign = 'middle'
-  #              ,floating = TRUE
-  #     )
-  # })
+  output$pami_pie_2 <- renderHighchart({
+    req(pami_clickers$second_half)
+    
+    highchart() %>%
+      hc_add_series(pami_clickers$second_half, hcaes(x=d_month, y=n, color=hex), startAngle = -90, endAngle = 90, type="pie",
+                    dataLabels=list(enabled=TRUE, distance = -30, formatter = JS("function() { if (this.point.month_label === '') { return null } else { return this.point.month_label} }"))
+                    ,innerSize= '50%', size ='100%'
+      ) %>%
+      hc_tooltip(formatter = JS(pie_tooltip)) %>%
+      hc_title(text = paste0('<b>',pami_clickers$second_half$date_type[[1]],'</b>')
+               ,style = list(useHTML = TRUE)
+               ,verticalAlign = 'middle'
+               ,floating = TRUE
+      )
+  })
   
-  # elements page ---------------------------------------------------------------
+  # proportion page ---------------------------------------------------------------
+  fiscal_qtrs <- reactive({ selected_fiscal_qtr(input$fy_select) })
+  
+  mds_prop <- reactive({ 
+    df <- readRDS(get_catalogued_or_all(input$prop_cat, mm_prop_path))
+    get_mdsqual_prop(df, input$compare_prop, div_choice(), fiscal_qtrs()) 
+  })
+  
+  output$prop_plot <- renderHighchart({
+    if (input$compare_prop == "compare_divs"){
+      plines <- get_center_facet_lines(mds_prop())
+      
+      highchart() %>%
+        hc_chart(type = "column") %>%
+        hc_plotOptions(series=list(stacking='normal')) %>% 
+        hc_yAxis(lineColor = "lightgrey", lineWidth = 5,
+                 labels  = list(formatter = JS("function () { return Math.abs(this.value) + '%'; }")), 
+                 max = 125, min = -100, showLastLabel = FALSE, tickInterval = 25, minorTickInterval = 25,
+                 plotBands = list(
+                   list(from = 105, to = 125, color = "rgba(211, 211, 211, 0.3)",
+                        label = list(text = "", verticalAlign = "top")))
+        ) %>%
+        hc_xAxis(categories = mds_prop()$code, labels=list(rotation = 0, staggerLines = 2),
+                 plotLines = plines) %>% 
+        hc_legend(enabled = FALSE) %>%
+        hc_tooltip(formatter = JS(prop_tooltip)) %>%
+        hc_add_series(mds_prop() %>% filter(prop_type=="p_above") %$% values*100, name = "meet", showInLegend = FALSE,color=c("#99d594")) %>%
+        hc_add_series(mds_prop() %>% filter(prop_type=="p_below") %$% -values*100, name = "are below", showInLegend = FALSE,color=c("#fc8d59"))
+    }
+    else {
+      highchart() %>% 
+        hc_xAxis(categories = mds_prop()$fy_label) %>% 
+        hc_yAxis(labels  = list(formatter = JS("function () { return Math.abs(this.value) + '%'; }")), maxPadding = 5, minPadding = 5, ceiling = 100) %>% #, max = 100
+        hc_legend(enabled = FALSE) %>%
+        hc_tooltip(formatter = JS(line_tooltip)) %>%
+        hc_add_series(name = "meet requirements", data = mds_prop() %>% filter(prop_type=="p_above") %$% values*100, color = '#99d594')
+    }
+    
+  })
+  
+  end_of_quarter_prop <- reactive({ 
+    if(input$compare_prop == "compare_divs") { max_q <- fiscal_qtrs() } else { max_q <- max(sort(unique(fiscal_slider_text(unique(mm_prop$fy_q))), decreasing = TRUE)) }  
+    get_eoq_text(max_q)
+  })
+  
+  output$perc_above <- renderValueBox({
+    if (input$compare_prop == "compare_divs"){
+      valueBox(
+        paste0(round(sum(mds_prop() %>% filter(prop_type == "p_above") %$% n_above)/sum(mds_prop() %>% filter(prop_type == "p_above") %$% n_recs),3)*100, "%"), 
+        vb_text("Meet minimum mandatory requirements",end_of_quarter_prop()), icon = icon("arrow-up", lib = "glyphicon"), color = "green"
+      )
+    }
+    else {
+      end_of_quarter_prop <- get_eoq_text(max(sort(unique(fiscal_slider_text(unique(mm_prop$fy_q))), decreasing = TRUE)))
+      # print(vb_text("Meet minimum mandatory requirements",end_of_quarter_prop()))
+      valueBox(
+        paste0(round(sum(mds_prop() %>% filter(prop_type == "p_above", fy_q == max(fy_q)) %$% n_above)/sum(mds_prop() %>% filter(prop_type == "p_above", fy_q == max(fy_q)) %$% n_recs),3)*100, "%"), 
+        vb_text("Meet minimum mandatory requirements",end_of_quarter_prop()), icon = icon("arrow-up", lib = "glyphicon"), color = "green"
+      )
+    }
+    
+  })
+  
+  output$perc_below <- renderValueBox({
+    if (input$compare_prop == "compare_divs"){
+      valueBox(
+        paste0(round(sum(mds_prop() %>% filter(prop_type == "p_below") %$% n_below)/sum(mds_prop() %>% filter(prop_type == "p_below") %$% n_recs),3)*100, "%"), 
+        vb_text("Below minimum mandatory requirements",end_of_quarter_prop()), icon = icon("arrow-down", lib = "glyphicon"), color = "orange"
+      )
+    }
+    else {
+      valueBox(
+        paste0(round(sum(mds_prop() %>% filter(prop_type == "p_below", fy_q == max(fy_q)) %$% n_below)/sum(mds_prop() %>% filter(prop_type == "p_below", fy_q == max(fy_q)) %$% n_recs),3)*100, "%"), 
+        vb_text("Below minimum mandatory requirements",end_of_quarter_prop()), icon = icon("arrow-down", lib = "glyphicon"), color = "orange"
+      )
+    }
+  })
+  
+  
+  # elements phase 1 data ---------------------------------------------------------------
   elements_by_division_all <- reactive({ readr::read_csv(get_catalogued_or_all(input$elements_cat, ebd_all_path)) })
   elements_by_division <- reactive({ readr::read_csv(get_catalogued_or_all(input$elements_cat, elements_by_division_file)) })
   genre_rem <- reactive({ readRDS(get_catalogued_or_all(input$elements_cat, genre_path)) }) 
@@ -1154,7 +1088,6 @@ server <- function(input, output, session) {
   })
   #  
   output$elements_uncat_text <- renderUI({
-    # print(length(prop_uncatalogued()))
     these_this <- if_else(length(div_choice()) == 1, 'this division', 'these divisions')
     if(!is.na(prop_uncatalogued()) & prop_uncatalogued() != 0) {
       tags$p(HTML(paste0("<i class='fa fa-info-circle'></i>  MSU staff estimate that approximately ",prop_uncatalogued(),"% of MMS items in ",these_this," are not associated with public-facing catalog, finding aid, or TMS records.")), style="white-space: pre-wrap")
@@ -1163,48 +1096,7 @@ server <- function(input, output, session) {
   
   elements_df <- reactive({ get_scores_by_element(elements_by_division_all(),elements_by_division(),div_choice()) })
   
-  output$e_plot <- renderHighchart({
-    # print(prop_uncatalogued())
-    current_data <- sort(names(select(elements_df(), ends_with(str_replace(end_of_quarter_elements,' ','_')))))
-    highchart() %>% 
-      hc_chart(type = "column") %>%
-      hc_plotOptions(column = list(stacking = "normal")) %>%
-      hc_xAxis(categories = elements_df()$element,#  y[sort(order(y)[elements_df()$element])]                   
-               labels=list(formatter=elements_bar_label)) %>%
-      hc_yAxis(labels = list(format = "{value}%"), max = 100, min = floor(min(select(elements_df(), starts_with("score_1"))))-10,
-               plotBands = list(color="rgba(169,169,169,0.3)",from=100-prop_uncatalogued(),to=100,zIndex=3)
-      ) %>%
-      hc_legend(enabled = FALSE) %>%
-      hc_add_series(name="Mar 19",data = elements_df()$score_0_Mar_19,stack = "baseline",color=c("#fc8d59")) %>%
-      hc_add_series(name="Mar 19",data = elements_df()$score_0.5_Mar_19,stack = "baseline",color=c("#fee08b")) %>%
-      hc_add_series(name="Mar 19",data = elements_df()$score_1_Mar_19,stack = "baseline",color=c("#91cf60")) %>%
-      hc_add_series(name=end_of_quarter_elements,data = elements_df()[[current_data[[1]]]],stack = "current",color=c("#fc8d59")) %>%
-      hc_add_series(name=end_of_quarter_elements,data = elements_df()[[current_data[[2]]]],stack = "current",color=c("#fee08b")) %>%
-      hc_add_series(name=end_of_quarter_elements,data = elements_df()[[current_data[[3]]]],stack = "current",color=c("#91cf60")) %>%
-      hc_tooltip(formatter = JS(element_tooltip))
-    })
-  
-  output$rem1 <- renderValueBox({
-    valueBox(num_remediated(id_rem(), div_choice()), "Items had at least one identifier added", icon = icon("id-card"), color = "lime")
-  })
-  
-  output$rem2 <- renderValueBox({
-    valueBox(num_remediated(genre_rem(), div_choice()), "Items had at least one genre term remediated", icon = icon("broom"), color = "fuchsia")
-  })
-  
-  output$rem3 <- renderValueBox({
-    valueBox(num_remediated(date_rem(), div_choice()), "Items had at least one date remediated", icon = icon("calendar-plus"), color = "black")
-  })
-  
-  output$rem4 <- renderValueBox({
-    valueBox(num_remediated(location_rem(), div_choice()), "Items had at least one location remediated", icon = icon("globe"), color = "maroon")
-  })
-  
-  # output$rem5 <- renderValueBox({
-  #   valueBox(sum(filter_by_division(readr::read_csv('./data/q3_name_roles.csv'), div_choice())$count), "Items had at least one name role added", icon = icon("user"), color = "maroon")
-  # })
-  
-  # elements extended page ---------------------------------------------------------------
+  # elements extended/phase 2 data ---------------------------------------------------------------
   ext_file <- paste0('.',str_split(elements_by_division_file,'[.]')[[1]][2], '_ext.', str_split(elements_by_division_file,'[.]')[[1]][3])
   ext_elements <- c('typeOfResource', 'archives_identifiers', 'genre', 'date')
   ext_vb_files <- paste0("./data/",ext_elements,'_up_',this_qtr,"_ext.rds")
@@ -1212,50 +1104,95 @@ server <- function(input, output, session) {
   output$ext_plot_title <- renderUI({
     HTML(paste("Remediation project highlights",br(), "<span style='font-size:12px'>March 2019 - ",month(eoq_elements,label=TRUE, abbr=FALSE)," ",year(eoq_elements),"</span>"))
   })
-
-  ext_init <- reactive({ readr::read_csv(get_catalogued_or_all(input$ext_check, ext_file)) })
+  
+  ext_init <- reactive({ readr::read_csv(get_catalogued_or_all(input$elements_cat, ext_file)) })
   ext_df <- reactive({ 
     get_ebd(ext_init(), div_choice()) %>% 
       filter(!element %in% c('title','location')) %>%
       mutate(element=recode(element, "tms_identifiers"="TMS identifiers","archives_identifiers"="Archives identifiers"))
-    })
+  })
   ext_min <- reactive({ ifelse(floor(min(select(ext_df(), starts_with("score_1"))))-10 < 0, 0, floor(min(select(ext_df(), starts_with("score_1"))))-10)  })
   
-  output$ext_plot <- renderHighchart({
-    print(head(ext_df()))
-    current_data <- sort(names(select(ext_df(), ends_with(str_replace(end_of_quarter_elements,' ','_')))))
-    highchart() %>%
-      hc_chart(type = "column") %>%
-      hc_plotOptions(column = list(stacking = "normal")) %>%
-      hc_xAxis(categories = ext_df()$element,#  y[sort(order(y)[elements_df()$element])]
-               labels=list(formatter=elements_bar_label)) %>%
-      hc_yAxis(labels = list(format = "{value}%"), max = 100, min = ext_min()
-               # ,plotBands = list(color="rgba(169,169,169,0.3)",from=100-prop_uncatalogued(),to=100,zIndex=3)
-      ) %>%
-      hc_legend(enabled = FALSE) %>%
-      hc_add_series(name="Mar 19",data = ext_df()$score_0_Mar_19,stack = "baseline",color=c("#fc8d59")) %>%
-      hc_add_series(name="Mar 19",data = ext_df()$score_0.5_Mar_19,stack = "baseline",color=c("#fee08b")) %>%
-      hc_add_series(name="Mar 19",data = ext_df()$score_1_Mar_19,stack = "baseline",color=c("#91cf60")) %>%
-      hc_add_series(name=end_of_quarter_elements,data = ext_df()[[current_data[[1]]]],stack = "current",color=c("#fc8d59")) %>%
-      hc_add_series(name=end_of_quarter_elements,data = ext_df()[[current_data[[2]]]],stack = "current",color=c("#fee08b")) %>%
-      hc_add_series(name=end_of_quarter_elements,data = ext_df()[[current_data[[3]]]],stack = "current",color=c("#91cf60")) %>%
-      hc_tooltip(formatter = JS(element_tooltip))
+  # elements phase1/phase2 plot ---------------------------------------------------------------
+  
+  output$elements_text <- renderUI({
+    if(input$phase_btn == "Phase 1") {
+      includeHTML("./text/e_scores.html")
+    } else {
+      includeHTML("./text/extended.html")
+    }
+  })
+  
+  output$e_plot <- renderHighchart({
+    if(input$phase_btn == "Phase 1") {
+      current_data <- sort(names(select(elements_df(), ends_with(str_replace(end_of_quarter_elements,' ','_')))))
+      highchart() %>% 
+        hc_chart(type = "column") %>%
+        hc_plotOptions(column = list(stacking = "normal")) %>%
+        hc_xAxis(categories = elements_df()$element,#  y[sort(order(y)[elements_df()$element])]                   
+                 labels=list(formatter=elements_bar_label)) %>%
+        hc_yAxis(labels = list(format = "{value}%"), max = 100, min = floor(min(select(elements_df(), starts_with("score_1"))))-10,
+                 plotBands = list(color="rgba(169,169,169,0.3)",from=100-prop_uncatalogued(),to=100,zIndex=3)
+        ) %>%
+        hc_legend(enabled = FALSE) %>%
+        hc_add_series(name="Mar 19",data = elements_df()$score_0_Mar_19,stack = "baseline",color=c("#fc8d59")) %>%
+        hc_add_series(name="Mar 19",data = elements_df()$score_0.5_Mar_19,stack = "baseline",color=c("#fee08b")) %>%
+        hc_add_series(name="Mar 19",data = elements_df()$score_1_Mar_19,stack = "baseline",color=c("#91cf60")) %>%
+        hc_add_series(name=end_of_quarter_elements,data = elements_df()[[current_data[[1]]]],stack = "current",color=c("#fc8d59")) %>%
+        hc_add_series(name=end_of_quarter_elements,data = elements_df()[[current_data[[2]]]],stack = "current",color=c("#fee08b")) %>%
+        hc_add_series(name=end_of_quarter_elements,data = elements_df()[[current_data[[3]]]],stack = "current",color=c("#91cf60")) %>%
+        hc_tooltip(formatter = JS(element_tooltip))
+    } else {
+      current_data <- sort(names(select(ext_df(), ends_with(str_replace(end_of_quarter_elements,' ','_')))))
+      highchart() %>%
+        hc_chart(type = "column") %>%
+        hc_plotOptions(column = list(stacking = "normal")) %>%
+        hc_xAxis(categories = ext_df()$element,#  y[sort(order(y)[elements_df()$element])]
+                 labels=list(formatter=elements_bar_label)) %>%
+        hc_yAxis(labels = list(format = "{value}%"), max = 100, min = ext_min()) %>%
+        hc_legend(enabled = FALSE) %>%
+        hc_add_series(name="Mar 19",data = ext_df()$score_0_Mar_19,stack = "baseline",color=c("#fc8d59")) %>%
+        hc_add_series(name="Mar 19",data = ext_df()$score_0.5_Mar_19,stack = "baseline",color=c("#fee08b")) %>%
+        hc_add_series(name="Mar 19",data = ext_df()$score_1_Mar_19,stack = "baseline",color=c("#91cf60")) %>%
+        hc_add_series(name=end_of_quarter_elements,data = ext_df()[[current_data[[1]]]],stack = "current",color=c("#fc8d59")) %>%
+        hc_add_series(name=end_of_quarter_elements,data = ext_df()[[current_data[[2]]]],stack = "current",color=c("#fee08b")) %>%
+        hc_add_series(name=end_of_quarter_elements,data = ext_df()[[current_data[[3]]]],stack = "current",color=c("#91cf60")) %>%
+        hc_tooltip(formatter = JS(element_tooltip))
+    }
+    })
+  
+  # elements phase1/phase2 vbs ---------------------------------------------------------------
+  
+  output$rem1 <- renderValueBox({
+    if(input$phase_btn == "Phase 1") {
+      valueBox(num_remediated(id_rem(), div_choice()), "Items had at least one identifier added", icon = icon("id-card"), color = "lime")
+    } else {
+      valueBox(num_remediated(readRDS(get_catalogued_or_all(input$elements_cat, ext_vb_files[[1]])), div_choice()), "Items had at least one resource type remediated", icon = icon("photo-video"), color = "lime")
+    }
   })
 
-  output$ext1 <- renderValueBox({
-    valueBox(num_remediated(readRDS(get_catalogued_or_all(input$ext_check, ext_vb_files[[1]])), div_choice()), "Items had at least one resource type remediated", icon = icon("photo-video"), color = "lime")
+  output$rem2 <- renderValueBox({
+    if(input$phase_btn == "Phase 1"){
+      valueBox(num_remediated(genre_rem(), div_choice()), "Items had at least one genre term remediated", icon = icon("broom"), color = "fuchsia")
+    } else {
+      valueBox(num_remediated(readRDS(get_catalogued_or_all(input$elements_cat, ext_vb_files[[2]])), div_choice()), "Items had at least one archives identifier added", icon = icon("id-card"), color = "fuchsia")
+      }
   })
 
-  output$ext2 <- renderValueBox({
-    valueBox(num_remediated(readRDS(get_catalogued_or_all(input$ext_check, ext_vb_files[[2]])), div_choice()), "Items had at least one archives identifier added", icon = icon("id-card"), color = "fuchsia")
+  output$rem3 <- renderValueBox({
+    if(input$phase_btn == "Phase 1"){
+      valueBox(num_remediated(date_rem(), div_choice()), "Items had at least one date remediated", icon = icon("calendar-plus"), color = "black")
+    } else {
+      valueBox(num_remediated(readRDS(get_catalogued_or_all(input$elements_cat, ext_vb_files[[3]])), div_choice()), "Items had at least one genre term remediated", icon = icon("broom"), color = "black")
+    }
   })
 
-  output$ext3 <- renderValueBox({
-    valueBox(num_remediated(readRDS(get_catalogued_or_all(input$ext_check, ext_vb_files[[3]])), div_choice()), "Items had at least one genre term remediated", icon = icon("broom"), color = "black")
-  })
-
-  output$ext4 <- renderValueBox({
-    valueBox(num_remediated(readRDS(get_catalogued_or_all(input$ext_check, ext_vb_files[[4]])), div_choice()), "Items had at least one date remediated", icon = icon("calendar-plus"), color = "maroon")
+  output$rem4 <- renderValueBox({
+    if(input$phase_btn == "Phase 1"){
+      valueBox(num_remediated(location_rem(), div_choice()), "Items had at least one location remediated", icon = icon("globe"), color = "maroon")
+    } else {
+      valueBox(num_remediated(readRDS(get_catalogued_or_all(input$elements_cat, ext_vb_files[[4]])), div_choice()), "Items had at least one date remediated", icon = icon("calendar-plus"), color = "maroon")
+    }
   })
   
   # elements if applicable page ---------------------------------------------------------------
@@ -1272,14 +1209,15 @@ server <- function(input, output, session) {
   ifapp_vb_files <- paste0("./data/",ifapp_elements,'_up_',this_qtr,"_ifapp.rds")
   
   output$ifapp_plot <- renderHighchart({
-    # print(head(ext_df()))
+    # print(head(ifapp_df()))
     current_data <- sort(names(select(ifapp_df(), ends_with(str_replace(end_of_quarter_elements,' ','_')))))
+    # print(current_data)
     highchart() %>%
       hc_chart(type = "column") %>%
       hc_plotOptions(column = list(stacking = "normal")) %>%
       hc_xAxis(categories = ifapp_df()$element,#  y[sort(order(y)[elements_df()$element])]
                labels=list(formatter=elements_bar_label)) %>%
-      hc_yAxis(labels = list(format = "{value}%"), max = 100, min = ext_min()
+      hc_yAxis(labels = list(format = "{value}%"), max = 100, min = ifapp_min()
                # ,plotBands = list(color="rgba(169,169,169,0.3)",from=100-prop_uncatalogued(),to=100,zIndex=3)
       ) %>%
       hc_legend(enabled = FALSE) %>%
@@ -1309,18 +1247,6 @@ server <- function(input, output, session) {
   })
   
   # reports and data download  ---------------------------------------------------------------
-  # download quarterly pdfs
-  selected_report <- reactive({
-    switch(input$reports, "fy2020_q1" = "www/MSU_FY20Q1.pdf", "fy2019_q4" = "www/MSU_endofFY19_report.pdf", "fy2019_q3" = "www/MSUquarterly_2019Jan-Mar.pdf")
-  })
-  output$downloadReport <- downloadHandler(
-    filename = "report.pdf",
-    content = function(file) {
-      file.copy(selected_report(), file)
-    },
-    contentType = "application/pdf"
-  )
-  
   # download rights
   output$downloadRights <- downloadHandler(
     filename = function() {

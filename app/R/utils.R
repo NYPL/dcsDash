@@ -19,10 +19,10 @@ library(readr)
 # prevent csv read from printing info
 options(readr.num_columns = 0)
 
-this_qtr <- 'f21q2'
+this_qtr <- 'f21q3'
 
 elements_by_division_file <- paste0("./data/",this_qtr,"_element_by_div.csv")
-last_updated <- as.Date(file.info(elements_by_division_file)$ctime)
+last_updated <- as.Date(file.info(elements_by_division_file)$mtime)
 eoq_elements <- rollback(floor_date(last_updated, "quarter"))
 end_of_quarter_elements <- paste0(month(eoq_elements,label=TRUE, abbr=TRUE)," ",str_sub(year(eoq_elements),start=-2))
 elements_bar_label <- JS(paste0("function () { return 'Mar 19  |  ",end_of_quarter_elements,"' + '<br>' +  this.value + '</br>'; }"))
@@ -46,9 +46,6 @@ get_catalogued_or_all <- function(cat_check, filepath) {
   # print(str_split(filepath,'[.]')[[1]])
   if_else(cat_check == FALSE, filepath, fp)
 }
-# filepath <- "./dires/data/q4f20_mm_prop.rds"
-# paste0(str_split(filepath,'.')[[1]][1],'_cat',str_split(filepath,'.rds')[[1]][2])
-# readRDS(get_catalogued_or_all(TRUE, "./dires/data/q4f20_mm_prop.rds"))
 
 trigger_data_load <- function(buttonId, buttonValue, local_path, gd_path, session, mainPlot=FALSE) {
   # print(buttonValue)
@@ -66,6 +63,7 @@ trigger_data_load <- function(buttonId, buttonValue, local_path, gd_path, sessio
 load_or_refresh_data <- function(local_path, gd_path, refresh = FALSE, key = FALSE) {
   if (key == TRUE) {
     drive_auth(cache = ".secrets", email = readRDS("./data/email.rds"))
+    # drive_auth(path = "./data/gd_secret.json")
     drive_download(drive_get(id = readRDS("./data/gd_key.rds")),local_path, overwrite = TRUE)
     vroom::vroom(local_path)
   } else if (refresh == TRUE) {
@@ -103,8 +101,10 @@ logo_blue_gradient <- dashboardthemes::shinyDashboardLogoDIY(
   )
 
 div_menu <- readRDS('./data/div_menu.rds') 
+div_menu$SASB <- div_menu$SASB[div_menu$SASB != "HV"]
 
-div_choices <- readRDS('./data/div_choices.rds')  
+div_choices <- readRDS('./data/div_choices.rds') 
+div_choices <- div_choices[div_choices != "HV"]; # without elements that are "HV"
 
 ami_div_choices <- c("Jerome Robbins Dance Division" = "DAN",
                      "Manuscripts and Archives Division" = "MSS",
@@ -116,7 +116,3 @@ pami_div_choices <- c("Jerome Robbins Dance Division" = "DAN",
                      "Music Division" = "MUS",
                      "Rodgers and Hammerstein Archives of Recorded Sound" = "RHA",
                      "Schomburg Moving Image and Recorded Sound Division" = "SCL")
-
-# month_start <- ymd("2019-01-01")
-# month_end <- ymd("2019-09-30")
-# get_FY_facet_lines(month_start, month_end)

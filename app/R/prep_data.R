@@ -66,32 +66,6 @@ prep_approvals <- function(approvals, div_choice, ami_switch, month_start, month
   # %>%
   #   filter_at(vars(starts_with("items"),starts_with("captures")),all_vars(!is.na(.)))
 }
-# https://github.com/jbkunst/highcharter/issues/395
-# month_start <- ymd("2020-07-01")
-# month_end <- ymd("2020-07-01")
-# a <- load_or_refresh_data("./dires/data/download/approvals.csv","~/approvals.csv",refresh = FALSE, key = FALSE)  %>% 
-#   filter(between(d_month, month_start, month_end)) %>%
-#   group_by(fy_year, fy_qy, d_month, rights) %>%
-#   summarize(captures = sum(captures),
-#             items = n()) %>%
-#   ungroup() %>%
-#   pivot_wider(names_from = c(rights), values_from = c(items,captures), values_fill = list(items = 0, captures = 0)) %>%
-#   complete(d_month = seq(month_start, month_end, by = "month")) 
-# 
-# highchart() %>% 
-#   hc_chart(type = "column", backgroundColor = 'rgb(240,240,240)'
-#            ,marginRight = 35
-#   ) %>%
-#   hc_plotOptions(column = list(stacking = "normal"), 
-#                  series = list(cursor = "pointer")
-#   ) %>%
-#   hc_xAxis(categories = as.list(a$d_month)#, type = "datetime"
-#            ,labels=list(formatter=JS("function () { return Highcharts.dateFormat('%b %y', new Date(this.value)); }")) #, step = 2
-#            # ,plotLines = get_FY_facet_lines(month_start(), month_end())
-#   ) %>%
-#   hc_add_series(name="items on DC",data = a$items_website,stack = "items",color=c("#810f7c")) %>%
-#   hc_add_series(name="items on premises",data = a$items_onPrem,stack = "items",color=c("#8856a7")) %>%
-#   hc_add_series(name="items other rights",data = a$items_FALSE,stack = "items",color=c("#8c96c6")) 
 
 get_approvals_collections <- function(approvals, div_choice, ami_switch, month_start, month_end) {
   approvals %>%
@@ -131,14 +105,6 @@ get_approvals_top_colls <- function(app_coll_name, clicked_rights, clicked_date,
     arrange(desc(n))
 }
 
-# # approvals <- load_or_refresh_data("./dires/data/download/approvals.csv","~/approvals.csv", refresh = FALSE)
-# ac <- get_approvals_collections(approvals_solr, div_choices, c("AMI","Not AMI"), ymd("2020-07-01"), ymd(today()))
-# tc <- get_approvals_top_colls(ac, "website", ymd("2020-07-01"), "captures", "items", "on Digital Collections")
-# if (nrow(filter(tc, n > 1)) > 0) {
-#   print(filter(tc, n > 1))
-# } else {
-#   print(tc)
-# }
 get_approvals_for_dl <- function(approvals, div_choice, ami_switch, month_start, month_end) {
   approvals %>% 
     filter(code %in% div_choice,
@@ -181,18 +147,8 @@ get_diu_top_colls <- function(coll_name, clicked_category, clicked_date) {
     ) %>%
     arrange(desc(n))
 }
-# coll_name <- load_or_refresh_data("./dires/data/download/diu_colls.csv","~/diu_colls.csv", refresh = FALSE)
-# tc <- get_diu_top_colls(coll_name, "created", ymd("2019-10-01"))
-# if (nrow(filter(tc, n > 1)) > 0) {
-#   top_colls <- filter(tc, n > 1)
-# } else {
-#   top_colls <- tc
-# }
-#### diu pies  ####
 
-# diu_pie <- load_or_refresh_data("./dires/data/download/diu_pie.csv","~/diu_pie.csv", refresh = FALSE)
-# diu_pie_df <- filter_by_division(diu_pie, div_choices) %>% drop_na(starts_with("date"))
-# cpdf <- get_clicked_pie_df(diu_pie_df, "created_month", ymd("2019-10-01"))
+#### diu pies  ####
 
 get_clicked_pie_df <- function(pie_df_ini, clicked_category, clicked_date, date_vars) {
   pie_df_ini %>%

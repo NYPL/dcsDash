@@ -23,5 +23,3 @@ get_eoq_text <- function(q_string) {
 vb_ui <- function(id,width=3) {
 	valueBoxOutput(id,width)
 }
-
-# vbs <- purrr::map(c("n_apps", "n_caps", "n_ami", "n_ami_caps"), vb_ui, width=4)

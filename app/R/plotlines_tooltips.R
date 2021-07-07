@@ -143,34 +143,3 @@ get_FY_facet_lines <- function(month_start, month_end) {
   }
   return(plines)
 }
-# plines[[1]] <- list(create_facet_line(paste('FY','2019'),-0.5))
-# month_start <- ymd('2018-07-01')
-# month_end <- ymd('2020-07-06')
-# fli<-get_FY_facet_lines(month_start,month_end)
-
-# plotdf<- approvals_solr %>%
-#   filter(code %in% div_choices,
-#          # ami %in% ami_switch,
-#          between(d_month, month_start, month_end)) %>%
-#   group_by(fy_year, fy_qy, d_month, rights) %>%
-#   summarize(captures = sum(captures),
-#             items = n()) %>%
-#   ungroup() %>%
-#   pivot_wider(names_from = c(rights), values_from = c(items,captures), values_fill = list(items = 0, captures = 0))
-# # get_FY_facet_lines(start,end)
-# # plotdf <- ac
-# highchart() %>%
-#   hc_chart(type = "column", backgroundColor = 'rgb(240,240,240)'
-#            ,marginRight = 35
-#            # ,margin = c(50, 50, 50, 50)
-#            ) %>%
-#   hc_plotOptions(column = list(stacking = "normal"),
-#                  series = list(cursor = "pointer") #, events = list(click = app_click_fxn, legendItemClick = app_legendClickFunction)
-#   ) %>%
-#   hc_xAxis(categories = plotdf$d_month
-#            ,labels=list(formatter=JS("function () { return Highcharts.dateFormat('%b %y', new Date(this.value)); }")) #, step = 2
-#            ,plotLines = get_FY_facet_lines(month_start, month_end)
-#   ) %>%
-#   hc_add_series(name="items on DC",data = plotdf$items_website,stack = "items",color=c("#810f7c")) %>%
-#   hc_add_series(name="items on premises",data = plotdf$items_onPrem,stack = "items",color=c("#8856a7")) %>%
-#   hc_add_series(name="items other rights",data = plotdf$items_FALSE,stack = "items",color=c("#8c96c6"))

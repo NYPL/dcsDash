@@ -5,13 +5,9 @@ get_latest_data <- function(buttonid, titleid) {
       actionButton(inputId=buttonid, label='Get latest data?'))
 }
 
-# span(paste0("Data last updated: ",as_date(file_date)), style = "font-size: 14px ; font-weight: bold")
-# span(paste0("Data last updated: ",ymd(today())), style = "font-size: 14px ; font-weight: bold")
-# uiOutput(date_text_id)
-# file.info('./dires/data/download/approvals.csv')$ctime
-
 selected_fiscal_qtr <- function(input_slider) {
-  paste0( str_remove(str_split_n(input_slider,',',1), 'FY '), '_', tolower(trimws(str_split_n(input_slider,',',-1))) )
+  # print(input_slider)
+  paste0( str_remove(str_split(input_slider,',')[[1]][[1]], 'FY '), '_', tolower(trimws(str_split(input_slider,',')[[1]][[2]])) )
 }
 
 fiscal_slider_text <- function(fiscal_quarters) {
@@ -134,11 +130,14 @@ diu_gloss_box <- function() {
 }
 
 pami_gloss_box <- function() {
-  box(width = 9, title = span("Glossary", style = "font-size: 14px ; font-weight: bold"), status = "info", solidHeader = TRUE, 
-      tags$p(HTML("<i class='fa fa-plus-circle'></i>  Reported"), style="white-space: pre-wrap; color: #1b9e77") %>%
+  box(width = 9, title = span("Glossary", style = "font-size: 14px ; font-weight: bold"), status = "info", solidHeader = TRUE,
+      tags$p(HTML("<i class='fa fa-record-vinyl'></i>  Digitized"), style="white-space: pre-wrap; color: #a61d4d") %>%
+        bsplus::bs_embed_tooltip("Physical audio or video objects have been recorded and converted to digital assets.") %>%
+        bsplus::bs_set_data(container = "body"),
+      tags$p(HTML("<i class='fa fa-flag'></i>  Reported"), style="white-space: pre-wrap; color: #1b9e77") %>%
         bsplus::bs_embed_tooltip("Assets related to an object have passed quality control and are ready for ingest into the repository.") %>%
         bsplus::bs_set_data(container = "body"),
-      tags$p(HTML("<i class='fa fa-camera'></i>  Ingested"), style="white-space: pre-wrap; color: #7570b3") %>%
+      tags$p(HTML("<i class='fa fa-file-import'></i>  Ingested"), style="white-space: pre-wrap; color: #7570b3") %>%
         bsplus::bs_embed_tooltip("Assets have been ingested into the repository and are available for post-digitization description by staff.") %>%
         bsplus::bs_set_data(container = "body")
   )
@@ -148,10 +147,6 @@ catalogued_check <- function(id) {
   checkboxInput(id, tags$p(HTML("Catalogued records only?"))%>%
                   bsplus::bs_embed_tooltip("Only view MMS item records associated with public-facing catalog, finding aid, or TMS records.", placement = "bottom") %>%
                   bsplus::bs_set_data(container = "body"), value = FALSE)
-}
-
-elements_help_box <- function(text_id, check_id="elements_cat") {
-  column(width = 2,fluidRow(box(width=NULL, uiOutput(text_id), catalogued_check(check_id), status = "info" )))
 }
 
 dl_box <- function(id){
